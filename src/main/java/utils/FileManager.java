@@ -6,6 +6,7 @@ import model.Customer;
 import model.Fleet;
 import model.Instance;
 import model.Solution;
+import solver.Solver;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
@@ -19,6 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.JFileChooser;
+
 
 /**
  * 
@@ -140,9 +142,13 @@ public class FileManager {
      * @param solution la solution à écrire
      * @throws FileManagerException si une erreur d'écriture se produit
      */
-    public void writeSolution(Solution solution, String filename) throws FileManagerException{
+    public void writeSolution(Solver solver, String filename) throws FileManagerException{
         try (PrintWriter writer = new PrintWriter(new File(filename))) {
-            writer.print(solution);
+            Solution solution = solver.getSolution();
+            writer.println("Fonction Obj : "+solver.evaluateSolution(solution));
+            writer.println("Contraintes temporelles respectées : "+(solver.isSecondEchelonTimeWindowsRespected(solution)?"oui":"non"));
+            writer.println("Contraintes capacités respectées : "+(solver.isSecondEchelonCapacitiesRespected(solution)?"oui":"non"));
+            writer.println(solution);
         }
         catch (IOException e) {
             throw new FileManagerException("Erreur d'écriture.", e);

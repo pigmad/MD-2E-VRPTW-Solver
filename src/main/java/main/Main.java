@@ -49,7 +49,7 @@ public class Main {
             System.out.println("Contraintes temporelles respectées : "+(solver.isSecondEchelonTimeWindowsRespected(solution)?"oui":"non"));
             System.out.println("Contraintes capacités respectées : "+(solver.isSecondEchelonCapacitiesRespected(solution)?"oui":"non"));
         
-            fm.writeSolution(solution,instanceFile+"-result.txt");
+            fm.writeSolution(solver,instanceFile+"-result.txt");
         }    
     }
 }

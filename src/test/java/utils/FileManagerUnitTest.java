@@ -4,6 +4,8 @@ import model.Instance;
 import model.Solution;
 import model.Assignment;
 
+import solver.Solver;
+
 import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+
 
 /**
  *
@@ -60,7 +63,8 @@ class FileManagerUnitTest {
         FileManager fm = new FileManager(filename);
         Instance instance = fm.readInstance();
         Solution solution = stubSolution(instance);
-        fm.writeSolution(solution, filename);
+        Solver solver = new Solver (null, solution);
+        fm.writeSolution(solver, filename);
         File file = new File(filename);
         assertTrue(file.exists());
         file.delete();
