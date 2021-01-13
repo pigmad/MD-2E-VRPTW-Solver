@@ -8,10 +8,10 @@ package model;
 public class Customer extends Site{
     private final int timeWindowStart; //date de début de la fenêtre de livraison du client
     private final int timeWindowEnd; //date de fin de la fenêtre de livraison du client
-    private final int demandSize; //demande de livraison du cleitn
+    private final int demandSize; //demande de livraison du client
 
-    public Customer(int id, int xCoordinate, int yCoordinate, int serviceTime, int timeWindowStart, int timeWindowEnd, int demandSize) {
-        super(id, xCoordinate, yCoordinate, serviceTime);
+    public Customer(int siteID, int globalSiteID, int xCoordinate, int yCoordinate, int serviceTime, int timeWindowStart, int timeWindowEnd, int demandSize) {
+        super(siteID, globalSiteID, xCoordinate, yCoordinate, serviceTime);
         this.timeWindowStart = timeWindowStart;
         this.timeWindowEnd = timeWindowEnd;
         this.demandSize = demandSize;
@@ -35,6 +35,6 @@ public class Customer extends Site{
     
     @Override
     public String toString() {
-        return "C" + this.getId();
+        return "C" + this.getSiteID();
     }
 }

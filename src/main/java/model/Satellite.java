@@ -6,15 +6,15 @@ package model;
  * @author LASTENNET Dorian
  */
 public class Satellite extends Site {
-    public Satellite(int id, int xCoordinate, int yCoordinate, int serviceTime){
-        super(id, xCoordinate, yCoordinate, serviceTime);
+    public Satellite(int siteID, int globalSiteID, int xCoordinate, int yCoordinate, int serviceTime) {
+        super(siteID, globalSiteID, xCoordinate, yCoordinate, serviceTime);
     }
-
+    
     //Surchage 
     
     @Override
     public String toString() {
-        return "S" + this.getId();
+        return "S" + this.getSiteID();
     }
     
 }

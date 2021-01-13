@@ -9,6 +9,7 @@ import utils.FileManagerException;
 
 import java.io.File;   
 import java.io.IOException;
+import java.util.List;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JFileChooser;
 
@@ -40,7 +41,7 @@ public class Main {
             //instantiation d'un solveur
             Solver solver = new Solver(instance);
             
-            //récuperation de la solu
+            //récuperation de la solution
             TestSolution solTest = new TestSolution();
             Solution solution = solver.solveInstance(solTest);
             System.out.println(solution);

@@ -50,13 +50,13 @@ public class Solver {
         for(List<Assignment> permutation : solution.getSecondEchelonPermutations()){
             int permutationSize = permutation.size();
             for (int iAssignment=0; iAssignment<permutationSize; iAssignment++){
-                //get the current assignment
+                //Assignation courante
                 Customer currentCustomer = permutation.get(iAssignment).getCustomer();
                 Satellite currentSatellite = permutation.get(iAssignment).getSatellite();
-                //get the next assignment
+                //Permutation suivante
                 Customer nextCustomer;
                 Satellite nextSatellite;
-                //If we reach the end of the permutation then the vehicle must return to the origin
+                //Si on atteint la fin de la permutation alors le véhicule doit retourner à son point d'origine
                 if (iAssignment==permutationSize-1){
                     nextCustomer = permutation.get(0).getCustomer();
                     nextSatellite = permutation.get(0).getSatellite();
@@ -66,26 +66,23 @@ public class Solver {
                     nextSatellite = permutation.get(iAssignment+1).getSatellite();
                 }
                 /**
-                 * when no satellite is in the assignment
-                 * it's means that we travel from a customer
-                 * then we have to compute the cost to travel 
-                 * from customer in assignment i to satellite or customer i+1
-                 * and the manutention cost to unload the vehicle
+                 * Si aucun satellite dans la permutation
+                 * alors on viens d'un client
+                 * on calcule le cout de trajet du client dans la permutation i au satellite dans la permutation i 
+                 * ou au client i+1 et le cout de déchargement du véhicule
                  **/
                 if (currentSatellite == null){
-                    secondEchelonTravelCostSum += nextSatellite == null ? currentCustomer.computeDistance(nextCustomer) : currentCustomer.computeDistance(nextSatellite);
+                    secondEchelonTravelCostSum += nextSatellite == null ? instance.getDistance(currentCustomer, nextCustomer) : instance.getDistance(currentCustomer, nextSatellite);
                     secondEchelonHandlingCostSum += currentCustomer.getServiceTime();
                 }
                 /**
-                 * when a satellite is in the assignment
-                 * it represent the assignment of the customer to the satellite
-                 * then we have to compute the cost to travel 
-                 * from customer in assignment i to satellite or customer i+1
-                 * and the manutention cost to load the vehicle
+                 * Si il y a un satellite dans la permutation
+                 * il représente l'affectation d'un client au satellite
+                 * on calcule le cout de trajet du client dans la permutation i au satellite dans la permutation i 
+                 * ou au client i+1 et le cout de chargement du véhicule
                  **/
                 else{
-                    
-                    secondEchelonTravelCostSum += nextSatellite == null ? currentSatellite.computeDistance(nextCustomer) : currentSatellite.computeDistance(nextSatellite);
+                    secondEchelonTravelCostSum += nextSatellite == null ? instance.getDistance(currentSatellite, nextCustomer) : instance.getDistance(currentSatellite, nextSatellite);
                     secondEchelonHandlingCostSum += currentSatellite.getServiceTime();
                 }
             }
@@ -117,7 +114,7 @@ public class Solver {
             int fleetLoad=0;
             int iAssignment = 0;
             while (isDoable && iAssignment < permutationSize){
-                //get the current assignment
+                //Permutation courante
                 Customer currentCustomer = permutation.get(iAssignment).getCustomer();
                 Satellite currentSatellite = permutation.get(iAssignment).getSatellite();
                 if (currentSatellite == null){
@@ -146,18 +143,17 @@ public class Solver {
             int iAssignment = 0;
             while (isDoable && iAssignment < permutationSize-1){
                 boolean isTimeWindowRespected = true;
-                //get the current assignment
+                //Permutation courante
                 Customer currentCustomer = permutation.get(iAssignment).getCustomer();
                 Satellite currentSatellite = permutation.get(iAssignment).getSatellite();
-                //get the next assignment
+                //Permutatiotn suivante
                 Customer nextCustomer = permutation.get(iAssignment+1).getCustomer();
                 Satellite nextSatellite = permutation.get(iAssignment+1).getSatellite();
                 /**
-                 * when no satellite is in the assignment
-                 * it's means that we travel from a customer
-                 * then we have to compute the cost to travel 
-                 * from customer in assignment i to satellite or customer i+1
-                 * and the manutention cost to unload the vehicle
+                 * Si aucun satellite dans la permutation
+                 * alors on viens d'un client
+                 * on calcule le cout de trajet du client dans la permutation i au satellite dans la permutation i 
+                 * ou au client i+1
                  **/
                 if (currentSatellite == null){
                     if (nextSatellite == null){
@@ -169,11 +165,10 @@ public class Solver {
                     }
                 }
                 /**
-                 * when a satellite is in the assignment
-                 * it represent the assignment of the customer to the satellite
-                 * then we have to compute the cost to travel 
-                 * from customer in assignment i to satellite or customer i+1
-                 * and the manutention cost to load the vehicle
+                 * Si il y a un satellite dans la permutation
+                 * il représente l'affectation d'un client au satellite
+                 * on calcule le cout de trajet du client dans la permutation i au satellite dans la permutation i 
+                 * ou au client i+1
                  **/
                 else{
                     if (nextSatellite == null){

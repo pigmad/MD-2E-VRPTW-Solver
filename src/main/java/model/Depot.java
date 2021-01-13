@@ -6,12 +6,12 @@ package model;
  * @author LASTENNET Dorian
  */
 public class Depot extends Site{
-    public Depot(int id, int xCoordinate, int yCoordinate, int serviceTime){
-        super(id, xCoordinate, yCoordinate, serviceTime);
+    public Depot(int siteID, int globalSiteID, int xCoordinate, int yCoordinate, int serviceTime) {
+        super(siteID, globalSiteID, xCoordinate, yCoordinate, serviceTime);
     }
-    
+        
     @Override
     public String toString() {
-        return "D" + this.getId();
+        return "D" + this.getSiteID();
     }
 }

@@ -2,7 +2,7 @@ package model;
 
 /**
  * Classe représentant l'affectation ou le séquencement (si aucun satellite n'est définie) des satellites et des clients
- * au sein d'une permuation.
+ * au sein d'une permutation.
  * Une permutation est un ensemble d'instances de cette classe
  * @author LASTENNET Dorian
  */
@@ -41,6 +41,6 @@ public class Assignment {
     //Surchage 
     @Override
     public String toString() {
-        return satellite == null ? customer.toString() : satellite.toString()+"_"+customer.toString();
+        return satellite == null ? customer.toString() : satellite.toString() + "_" + customer.toString();
     }
 }

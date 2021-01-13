@@ -80,6 +80,8 @@ public class FileManager {
             }
             linesNumber.close();
             
+            int globalID = 0;
+            
             for(int i=0; i<customerNumber; i++){
                 ArrayList<Integer> allMatches = new ArrayList<>();
                 line = reader.readLine();
@@ -92,8 +94,9 @@ public class FileManager {
                 while(lineMatcher.find()) {
                     allMatches.add(Integer.parseInt(lineMatcher.group()));
                 }
-                Customer customer = new Customer(i+1, allMatches.get(0), allMatches.get(1), allMatches.get(5), allMatches.get(2), allMatches.get(3), allMatches.get(4));
+                Customer customer = new Customer(i+1, globalID, allMatches.get(0), allMatches.get(1), allMatches.get(5), allMatches.get(2), allMatches.get(3), allMatches.get(4));
                 customers.add(customer);
+                globalID++;
             }
 
             for(int i=0; i<satelliteNumber; i++){
@@ -108,8 +111,9 @@ public class FileManager {
                 while(lineMatcher.find()) {
                     allMatches.add(Integer.parseInt(lineMatcher.group()));
                 }
-                Satellite satellite = new Satellite(i+1, allMatches.get(0), allMatches.get(1), allMatches.get(2));
+                Satellite satellite = new Satellite(i+1, globalID, allMatches.get(0), allMatches.get(1), allMatches.get(2));
                 satellites.add(satellite);
+                globalID++;
             }
 
             for(int i=0; i<depotNumber; i++){
@@ -124,8 +128,9 @@ public class FileManager {
                 while(lineMatcher.find()) {
                     allMatches.add(Integer.parseInt(lineMatcher.group()));
                 }
-                Depot depot = new Depot(i+1, allMatches.get(0), allMatches.get(1), allMatches.get(2));
+                Depot depot = new Depot(i+1, globalID, allMatches.get(0), allMatches.get(1), allMatches.get(2));
                 depots.add(depot);
+                globalID++;
             }
         }
         catch (FileNotFoundException e){

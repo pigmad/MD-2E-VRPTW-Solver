@@ -19,10 +19,10 @@ class SiteUnitTest {
     
     @BeforeAll
     void setUpClass() {
-        depot1 = new Depot(1,8,20,0);
-        depot2 = new Depot(2,13,20,0);
-        satellite1 = new Satellite(3,-10,10,10);
-        customer1 = new Customer(4,-50,-10,10,0,50,70);
+        depot1 = new Depot(1,0,8,20,0);
+        depot2 = new Depot(2,1,13,20,0);
+        satellite1 = new Satellite(1,2,-10,10,10);
+        customer1 = new Customer(1,3,-50,-10,10,0,50,70);
     }
 
     @Test

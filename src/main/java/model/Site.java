@@ -9,13 +9,15 @@ import static java.lang.Math.sqrt;
  * @author LASTENNET Dorian
  */
 public abstract class Site {
-    private final int id; //identifiant du site
+    private final int siteID; //identifiant du site parmi les sites de mêmes types
+    private final int globalSiteID; //identifiant du site parmi tous les sites
     private final int xCoordinate; //coordonnée en x
     private final int yCoordinate; //coordonnée en y
     private final int serviceTime; //cout de manutention pour charger/déchargement une cargaison
     
-    public Site(int id,int xCoordinate, int yCoordinate, int serviceTime){
-        this.id = id;
+    public Site(int siteID, int globalSiteID, int xCoordinate, int yCoordinate, int serviceTime){
+        this.siteID = siteID;
+        this.globalSiteID = globalSiteID;
         this.xCoordinate = xCoordinate;
         this.yCoordinate = yCoordinate;
         this.serviceTime = serviceTime;
@@ -32,10 +34,14 @@ public abstract class Site {
     
     //Accesseurs
     
-    public int getId() {
-        return id;
+    public int getSiteID() {
+        return siteID;
     }
-    
+
+    public int getGlobalSiteID() {
+        return globalSiteID;
+    }
+      
     public int getxCoordinate() {
         return xCoordinate;
     }
