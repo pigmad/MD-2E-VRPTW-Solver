@@ -29,10 +29,20 @@ public class Solver {
         return solution;
     }
     
+    /**
+     * Fonction d'évaluation d'une solution
+     * @param solution
+     * @return la valeur de la fonction objectif pour la solution
+     */
     public double evaluateSolution(Solution solution){
         return evaluateFirstEchelon(solution) + evaluateSecondEchelon(solution);
     }
     
+    /**
+     * Fonction d'évaluation du premier niveau
+     * @param solution
+     * @return la valeur de la fonction objectif pour le premier niveau de la solution
+     */
     public double evaluateFirstEchelon(Solution solution){
         double firstEchelonTravelCost = 0.0;
         double firstEchelonHandlingCost = 0.0;
@@ -40,6 +50,11 @@ public class Solver {
         return firstEchelonTravelCost + firstEchelonHandlingCost;
     }
     
+    /**
+     * Fonction d'évaluation du second niveau
+     * @param solution
+     * @return la valeur de la fonction objectif pour le second niveau de la solution
+     */
     public double evaluateSecondEchelon(Solution solution){
         double secondEchelonTravelCostSum = 0.0;
         double secondEchelonHandlingCostSum = 0.0;
@@ -90,25 +105,53 @@ public class Solver {
         return secondEchelonTravelCostSum + secondEchelonHandlingCostSum + secondEchelonVehicleUsageCostSum;
     }
     
+    /**
+     * Fonction d'évaluation de la faisabilité de la solution
+     * @param solution
+     * @return booléen indiquant la faisabilité de la solution
+     */
     public boolean isSolutionDoable(Solution solution){
         return isFirstEchelonCapacitiesRespected(solution) && isFirstEchelonTimeWindowsRespected(solution) && isSecondEchelonCapacitiesRespected(solution) && isSecondEchelonTimeWindowsRespected(solution);
     }
     
+    /**
+     * Fonction d'évaluation du respect de la contrainte de capacité pour le premier niveau
+     * @param solution
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
     public boolean isFirstEchelonCapacitiesRespected(Solution solution){
         boolean isDoable = true;        
         return isDoable;
     }
     
+    /**
+     * Fonction d'évaluation du respect de la contrainte de fenêtre de temps pour le premier niveau
+     * @param solution
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
     public boolean isFirstEchelonTimeWindowsRespected(Solution solution){
         boolean isDoable = true;        
         return isDoable;
     }
 
+    /**
+     * Fonction d'évaluation du respect de la contrainte de nombre de véhicules pour le premier niveau
+     * @param solution
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
+    public boolean isFirstEchelonVehiclesNumberRespected(Solution solution){
+        return solution.getFirstEchelonPermutations().size() <= instance.getFirstEchelonFleet().getVehiclesNumber();
+    }
+    
+    /**
+     * Fonction d'évaluation du respect de la contrainte de capacité pour le second niveau
+     * @param solution
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
     public boolean isSecondEchelonCapacitiesRespected(Solution solution) {
-        int usedVehicles = solution.getSecondEchelonPermutations().size();
-        boolean isDoable = usedVehicles < instance.getSecondEchelonFleet().getVehiclesNumber();
+        boolean isDoable = true;
         int iPermutation = 0;
-        while (isDoable && iPermutation < usedVehicles){
+        while (isDoable && iPermutation < solution.getSecondEchelonPermutations().size()){
             List<Assignment> permutation = solution.getSecondEchelonPermutations().get(iPermutation);
             int permutationSize = permutation.size();
             int fleetLoad=0;
@@ -131,12 +174,15 @@ public class Solver {
         return isDoable;
     }
     
+    /**
+     * Fonction d'évaluation du respect de la contrainte de fenêtre de temps pour le second niveau 
+     * @param solution
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
     public boolean isSecondEchelonTimeWindowsRespected(Solution solution) {
-        int usedVehicles = solution.getSecondEchelonPermutations().size();
-        int secondEchelonVehicleCost = instance.getSecondEchelonFleet().getVehiclesCost();
-        boolean isDoable = usedVehicles < instance.getSecondEchelonFleet().getVehiclesNumber();
+        boolean isDoable = true;
         int iPermutation = 0;
-        while (isDoable && iPermutation < usedVehicles){
+        while (isDoable && iPermutation < solution.getSecondEchelonPermutations().size()){
             List<Assignment> permutation = solution.getSecondEchelonPermutations().get(iPermutation);
             int permutationSize = permutation.size();
             double currentTime = 0.0; //interdépendance avec niveau 1 ????
@@ -185,7 +231,16 @@ public class Solver {
             iPermutation++;
         }
         return isDoable;
-    }    
+    }   
+    
+    /**
+     * Fonction d'évaluation du respect de la contrainte de nombre de véhicules pour le second niveau
+     * @param solution
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
+    public boolean isSecondEchelonVehiclesNumberRespected(Solution solution){
+        return solution.getSecondEchelonPermutations().size() <= instance.getSecondEchelonFleet().getVehiclesNumber();
+    }
     
     //Accesseurs
 

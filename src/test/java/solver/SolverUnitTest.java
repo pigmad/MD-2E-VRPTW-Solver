@@ -7,6 +7,7 @@ import model.Solution;
 import utils.FileManager;
 import utils.FileManagerException;
 import java.util.ArrayList;
+import org.junit.jupiter.api.AfterEach;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -19,11 +20,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 class SolverUnitTest {
     private Solver solver;
     private Instance instance;
-    private Solution solution;
-    private TestSolution testSol;
-    
-    private static final String SOLUTIONFILENAME = "solutionTest.csv";
-    
+    private Solution solution;    
     
     void setUpClass(String instanceTestFile) throws FileManagerException, IOException {
         //Read instance from test file
@@ -35,6 +32,13 @@ class SolverUnitTest {
         
         //set up a solution for test instances
         solution = new TestSolution().run(solver);
+    }
+    
+    @AfterEach
+    public void tearDown() {
+        instance = null;
+        solver = null;
+        solution = null;
     }
     
     public Solution setUpSolution(Instance instance) {
@@ -130,6 +134,16 @@ class SolverUnitTest {
         "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', false"
     })
     void TestIsSecondEchelonCapacitiesRespected(String testFilename, boolean expectedValue) throws FileManagerException, IOException{
+        setUpClass(testFilename);
+        boolean secondEchelonValue = solver.isSecondEchelonCapacitiesRespected(solution);
+        assertEquals(expectedValue, secondEchelonValue);
+    }
+    
+    @ParameterizedTest
+    @CsvSource({
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', true",
+    })
+    void TestIsSecondEchelonVehiclesNumberRespected(String testFilename, boolean expectedValue) throws FileManagerException, IOException{
         setUpClass(testFilename);
         boolean secondEchelonValue = solver.isSecondEchelonCapacitiesRespected(solution);
         assertEquals(expectedValue, secondEchelonValue);
