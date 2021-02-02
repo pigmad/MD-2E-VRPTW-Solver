@@ -71,15 +71,12 @@ public class FileManager {
         satelliteNumber = Integer.parseInt(match[1]);
         customerNumber = Integer.parseInt(match[2]);
         try (BufferedReader reader = new BufferedReader(new FileReader(instanceFilename))) {
-            FileReader input = new FileReader(instanceFilename);
-            String line;
-            LineNumberReader linesNumber = new LineNumberReader(input);
-            if ((int)linesNumber.lines().count() != depotNumber+satelliteNumber+customerNumber){
-                linesNumber.close();
+            int lines = countLines(instanceFilename);
+            if (lines != depotNumber+satelliteNumber+customerNumber){
                 throw new FileManagerException("Nombre d'entités invalide.");
             }
-            linesNumber.close();
             
+            String line;
             int globalID = 0;
             
             for(int i=0; i<customerNumber; i++){
@@ -158,6 +155,26 @@ public class FileManager {
         catch (IOException e) {
             throw new FileManagerException("Erreur d'écriture.", e);
         }
+    }
+    
+    /**
+     * Fonction qui compte le nombre de lignes non vides (caractères espaces inclus) dans le fichier en paramètre
+     * @param fileName fichier
+     * @return nombre de ligne
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
+    public int countLines (String fileName) throws FileNotFoundException, IOException{
+        int lines = 0;
+        BufferedReader reader = new BufferedReader(new FileReader(fileName));
+        String line = reader.readLine();
+        while (line != null) {
+            if (!line.isBlank()) {
+                lines++;
+            }
+            line = reader.readLine();
+        }
+        return lines;
     }
     
     //Accesseurs
