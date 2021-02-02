@@ -57,7 +57,7 @@ public class FileManager {
         Fleet firstEchelonFleet = new Fleet(1,10,200,50);
         Fleet secondEchelonFleet = new Fleet(2,20,50,25);
         //Pattern pour match le nombre de chacun des sites dans le nom du fichier 
-        final Pattern FILENAMEPATERN = Pattern.compile("\\d,\\d,\\d");
+        final Pattern FILENAMEPATERN = Pattern.compile("\\d+,\\d+,\\d+");
         //Pattern pour match chaque élément d'une ligne du fichier
         final Pattern LINEPATERN = Pattern.compile("-?\\d+");
         

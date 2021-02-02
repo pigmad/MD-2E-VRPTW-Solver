@@ -40,10 +40,12 @@ public class Main {
 
             //instantiation d'un solveur
             Solver solver = new Solver(instance);
+            TestSolution solTest = new TestSolution();
+            solver.setHeuristic(solTest);
             
             //récuperation de la solution
-            TestSolution solTest = new TestSolution();
-            Solution solution = solver.solveInstance(solTest);
+            solver.solveInstance();
+            Solution solution = solver.getSolution();
             System.out.println(solution);
 
             System.out.println("Fonction Obj : "+solver.evaluateSolution(solution));
