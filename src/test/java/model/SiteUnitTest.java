@@ -27,36 +27,36 @@ class SiteUnitTest {
 
     @Test
     void TestComputeDistanceBetweenSiteImpl(){
-        double computedDistance = depot1.computeDistance(depot2);
-        double expectedDistance = sqrt(25.0);
+        long computedDistance = depot1.computeDistance(depot2);
+        long expectedDistance = 5;
         assertEquals(expectedDistance, computedDistance);
     }
     
     @Test
     void TestComputeDistanceOrderDontMatter(){
-        double computedDistance = depot1.computeDistance(depot2);
-        double otherOrderComputedDistance = depot2.computeDistance(depot1);
+        long computedDistance = depot1.computeDistance(depot2);
+        long otherOrderComputedDistance = depot2.computeDistance(depot1);
         assertEquals(otherOrderComputedDistance, computedDistance);
     }
     
     @Test
     void TestComputeDistanceBetweenSameSiteImpl(){
-        double computedDistance = depot1.computeDistance(depot1);
-        double expectedDistance = 0.0;
+        long computedDistance = depot1.computeDistance(depot1);
+        long expectedDistance = 0;
         assertEquals(expectedDistance, computedDistance);
     }
     
     @Test
     void TestComputeDistanceBetweenDepotSattelite(){
-        double computedDistance = depot1.computeDistance(satellite1);
-        double expectedDistance = sqrt(424.0);
+        long computedDistance = depot1.computeDistance(satellite1);
+        long expectedDistance = 21;
         assertEquals(expectedDistance,computedDistance);
     }
     
     @Test
     void TestComputeDistanceBetweenSatelliteCustomer(){
-        double computedDistance = satellite1.computeDistance(customer1);
-        double expectedDistance = sqrt(2000.0);
+        long computedDistance = satellite1.computeDistance(customer1);
+        long expectedDistance = 45;
         assertEquals(expectedDistance,computedDistance);
     }
 }

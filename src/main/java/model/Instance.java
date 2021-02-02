@@ -16,7 +16,7 @@ public class Instance {
     private final List<Customer> customers;
     private final Fleet firstEchelonFleet;
     private final Fleet secondEchelonFleet;
-    private final List<List<Double>> distanceMatrix;
+    private final List<List<Long>> distanceMatrix;
 
     public Instance(List<Depot> depots, List<Satellite> satellites, List<Customer> customers, Fleet firstEchelonFleet, Fleet secondEchlonFleet) {
         this.depots = depots;
@@ -31,7 +31,7 @@ public class Instance {
                                 .flatMap(x -> x.stream())
                                 .collect(Collectors.toList());
         for (Site siteLigne : sites) {
-            ArrayList<Double> distances = new ArrayList<>();
+            ArrayList<Long> distances = new ArrayList<>();
             for(Site siteColonne : sites){
                 distances.add(siteLigne.computeDistance(siteColonne));
             }
@@ -61,7 +61,7 @@ public class Instance {
         return secondEchelonFleet;
     }
 
-    public List<List<Double>> getDistanceMatrix() {
+    public List<List<Long>> getDistanceMatrix() {
         return distanceMatrix;
     }
 

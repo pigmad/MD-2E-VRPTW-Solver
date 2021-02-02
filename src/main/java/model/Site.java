@@ -2,6 +2,7 @@ package model;
 
 import static java.lang.Math.pow; 
 import static java.lang.Math.sqrt; 
+import static java.lang.Math.round;
 
 /**
  * Classe abstraite représentant toutes les entités sommets (les sites) du problème (dépot, satellite, client)
@@ -28,8 +29,8 @@ public abstract class Site {
      * @param site une implémentation de la classe Site pour le calcul de la distance
      * @return double : la distance euclidienne entre les deux sommets
      */
-    public final double computeDistance(Site site){
-        return sqrt(pow((double)xCoordinate - site.getxCoordinate(),2) + pow((double)yCoordinate - site.getyCoordinate(),2));
+    public final long computeDistance(Site site){
+        return round(sqrt(pow((double)xCoordinate - site.getxCoordinate(),2) + pow((double)yCoordinate - site.getyCoordinate(),2)));
     }
     
     //Accesseurs
@@ -53,4 +54,25 @@ public abstract class Site {
     public int getServiceTime() {
         return serviceTime;
     }
+    
+    //Surchage
+    
+    @Override
+    public boolean equals(Object o) { 
+  
+        // l'objet est comparé avec lui même 
+        if (o == this) { 
+            return true; 
+        } 
+  
+        // l'objet comparé n'est pas de la même classe
+        if (!(o instanceof Site)) { 
+            return false; 
+        } 
+          
+        Site s = (Site) o; 
+          
+        // L'id global est unique, on l'utilise comme comparaison 
+        return Integer.compare(globalSiteID, s.globalSiteID) == 0;
+    } 
 }

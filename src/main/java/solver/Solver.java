@@ -15,6 +15,7 @@ import java.util.List;
 public class Solver {
     private final Instance instance;
     private Solution solution;
+    private Heuristic heuristic;
 
     public Solver(Instance instance) {
         this.instance = instance;
@@ -24,9 +25,8 @@ public class Solver {
         this.solution = solution;
     }
     
-    public Solution solveInstance(Heuristic heuristic){
+    public void solveInstance(){
         solution = heuristic.run(this);
-        return solution;
     }
     
     /**
@@ -34,7 +34,7 @@ public class Solver {
      * @param solution
      * @return la valeur de la fonction objectif pour la solution
      */
-    public double evaluateSolution(Solution solution){
+    public long evaluateSolution(Solution solution){
         return evaluateFirstEchelon(solution) + evaluateSecondEchelon(solution);
     }
     
@@ -43,9 +43,9 @@ public class Solver {
      * @param solution
      * @return la valeur de la fonction objectif pour le premier niveau de la solution
      */
-    public double evaluateFirstEchelon(Solution solution){
-        double firstEchelonTravelCost = 0.0;
-        double firstEchelonHandlingCost = 0.0;
+    public long evaluateFirstEchelon(Solution solution){
+        long firstEchelonTravelCost = 0;
+        long firstEchelonHandlingCost = 0;
         
         return firstEchelonTravelCost + firstEchelonHandlingCost;
     }
@@ -55,12 +55,12 @@ public class Solver {
      * @param solution
      * @return la valeur de la fonction objectif pour le second niveau de la solution
      */
-    public double evaluateSecondEchelon(Solution solution){
-        double secondEchelonTravelCostSum = 0.0;
-        double secondEchelonHandlingCostSum = 0.0;
+    public long evaluateSecondEchelon(Solution solution){
+        long secondEchelonTravelCostSum = 0;
+        long secondEchelonHandlingCostSum = 0;
         
         int secondEchelonVehicleCost = instance.getSecondEchelonFleet().getVehiclesCost();
-        double secondEchelonVehicleUsageCostSum = (double)solution.getSecondEchelonPermutations().size() * secondEchelonVehicleCost;
+        long secondEchelonVehicleUsageCostSum = (long)solution.getSecondEchelonPermutations().size() * secondEchelonVehicleCost;
         
         for(List<Assignment> permutation : solution.getSecondEchelonPermutations()){
             int permutationSize = permutation.size();
@@ -111,7 +111,12 @@ public class Solver {
      * @return booléen indiquant la faisabilité de la solution
      */
     public boolean isSolutionDoable(Solution solution){
-        return isFirstEchelonCapacitiesRespected(solution) && isFirstEchelonTimeWindowsRespected(solution) && isSecondEchelonCapacitiesRespected(solution) && isSecondEchelonTimeWindowsRespected(solution);
+        return isFirstEchelonCapacitiesRespected(solution) &&
+                isFirstEchelonTimeWindowsRespected(solution) &&
+                isFirstEchelonVehiclesNumberRespected(solution) &&
+                isSecondEchelonCapacitiesRespected(solution) &&
+                isSecondEchelonTimeWindowsRespected(solution) &&
+                isSecondEchelonVehiclesNumberRespected(solution);
     }
     
     /**
@@ -140,7 +145,8 @@ public class Solver {
      * @return booléen indiquant la faisabilité de la contrainte
      */
     public boolean isFirstEchelonVehiclesNumberRespected(Solution solution){
-        return solution.getFirstEchelonPermutations().size() <= instance.getFirstEchelonFleet().getVehiclesNumber();
+        return true;
+        //return solution.getFirstEchelonPermutations().size() <= instance.getFirstEchelonFleet().getVehiclesNumber();
     }
     
     /**
@@ -246,6 +252,10 @@ public class Solver {
 
     public Instance getInstance() {
         return instance;
+    }
+    
+    public void setHeuristic(Heuristic heuristic) {
+        this.heuristic = heuristic;
     }
     
     public Solution getSolution() {

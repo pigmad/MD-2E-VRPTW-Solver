@@ -29,9 +29,12 @@ class SolverUnitTest {
         
         //setup a solver
         solver = new Solver(instance);
+        TestSolution solTest = new TestSolution();
+        solver.setHeuristic(solTest);
         
         //set up a solution for test instances
-        solution = new TestSolution().run(solver);
+        solver.solveInstance();
+        solution = solver.getSolution();
     }
     
     @AfterEach
@@ -69,9 +72,9 @@ class SolverUnitTest {
     
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 135.89341710842052",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 135.89341710842052",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 135.89341710842052"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 135",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 135",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 135"
     })
     void TestEvaluateSecondEchelon(String testFilename, double expectedValue) throws FileManagerException, IOException{
         setUpClass(testFilename);
@@ -81,13 +84,13 @@ class SolverUnitTest {
     
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 135.89341710842052",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 135.89341710842052",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 135.89341710842052"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 135",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 135",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 135"
     })
     void TestEvaluateSolution(String testFilename, double expectedValue) throws FileManagerException, IOException{
         setUpClass(testFilename);
-        double solutionValue = solver.evaluateSolution(solution);
+        long solutionValue = solver.evaluateSolution(solution);
         assertEquals(expectedValue, solutionValue);
     }
     
