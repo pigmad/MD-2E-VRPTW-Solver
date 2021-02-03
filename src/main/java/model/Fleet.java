@@ -39,6 +39,12 @@ public class Fleet {
 
     @Override
     public String toString() {
-        return "F" + id + "=[vehiclesNumber=" + vehiclesNumber + ", vehiclesCapacity=" + vehiclesCapacity + ", vehiclesCost=" + vehiclesCost + ']';
+        StringBuilder sb = new StringBuilder();
+        sb.append("D").append(id);
+        sb.append("=[vehiclesNumber=").append(vehiclesNumber);
+        sb.append(", vehiclesCapacity=").append(vehiclesCapacity);
+        sb.append(", vehiclesCost=").append(vehiclesCost);
+        sb.append("]");
+        return sb.toString();
     }
 }

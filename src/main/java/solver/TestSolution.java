@@ -9,7 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Cette classe est une classe de test qui renvoie une solution fixe
+ * A N'UTILISER QU'AVEC DES INSTANCES DE TEST 
  * @author LASTENNET Dorian
  */
 public class TestSolution implements Heuristic  {

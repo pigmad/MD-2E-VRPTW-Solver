@@ -9,7 +9,7 @@ import model.Solution;
 import java.util.List;
 
 /**
- *
+ * Classe solveur chargé de gérer la résolution de l'instance lue
  * @author LASTENNET Dorian
  */
 public class Solver {

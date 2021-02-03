@@ -7,7 +7,8 @@ import java.util.stream.Stream;
 
 
 /**
- *
+ * Classe contenant toutes les données du problème à résoudre
+ * Classe instancié par la classe de lecture de fichier @see utils.FileManager
  * @author LASTENNET Dorian
  */
 public class Instance {

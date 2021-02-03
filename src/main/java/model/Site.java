@@ -5,8 +5,8 @@ import static java.lang.Math.sqrt;
 import static java.lang.Math.round;
 
 /**
- * Classe abstraite représentant toutes les entités sommets (les sites) du problème (dépot, satellite, client)
- * Permet mutualiser des opérations entre les sommets, comme le calcul de la distance euclienne entre deux points
+ * Classe abstraite représentant toutes les entités sommets (les sites) du problème (dépot, satellite ou client)
+ * Permet de mutualiser des opérations entre les sommets, comme le calcul de la distance euclienne entre deux points
  * @author LASTENNET Dorian
  */
 public abstract class Site {

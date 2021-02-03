@@ -14,16 +14,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JFileChooser;
-
-
 /**
- * 
+ * Classe de gestion de fichier chargée de vérifier les fichiers d'instances données,
+ * de récuperer les données et de créer l'instance du problème utilisé pour la résolution
  * @author LASTENNET Dorian
  */
 public class FileManager {

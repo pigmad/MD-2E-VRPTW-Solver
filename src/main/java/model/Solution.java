@@ -7,7 +7,7 @@ import java.util.ArrayList;
 /**
  * Classe qui contient la solution du problème
  * Une solution est un ensemble de permutation
- * Une permutation est un ensemble
+ * Une permutation est un ensemble d'affectation : @see model.Assignment
  * @author LASTENNET Dorian
  */
 public class Solution {

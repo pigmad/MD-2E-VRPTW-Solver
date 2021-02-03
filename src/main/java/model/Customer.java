@@ -3,6 +3,7 @@ package model;
 /**
  * Classe représentant un client
  * Une instance de cette classe est un sommet du graphe
+ * Hérite de @see model.Site
  * @author LASTENNET Dorian
  */
 public class Customer extends Site{
