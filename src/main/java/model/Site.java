@@ -29,8 +29,8 @@ public abstract class Site {
      * @param site une implémentation de la classe Site pour le calcul de la distance
      * @return double : la distance euclidienne entre les deux sommets
      */
-    public final long computeDistance(Site site){
-        return round(sqrt(pow((double)xCoordinate - site.getxCoordinate(),2) + pow((double)yCoordinate - site.getyCoordinate(),2)));
+    public final double computeDistance(Site site){
+        return sqrt(pow((double)xCoordinate - site.getxCoordinate(),2) + pow((double)yCoordinate - site.getyCoordinate(),2));
     }
     
     //Accesseurs

@@ -34,7 +34,7 @@ public class Solver {
      * @param solution
      * @return la valeur de la fonction objectif pour la solution
      */
-    public long evaluateSolution(Solution solution){
+    public double evaluateSolution(Solution solution){
         return evaluateFirstEchelon(solution) + evaluateSecondEchelon(solution);
     }
     
@@ -43,9 +43,9 @@ public class Solver {
      * @param solution
      * @return la valeur de la fonction objectif pour le premier niveau de la solution
      */
-    public long evaluateFirstEchelon(Solution solution){
-        long firstEchelonTravelCost = 0;
-        long firstEchelonHandlingCost = 0;
+    public double evaluateFirstEchelon(Solution solution){
+        double firstEchelonTravelCost = 0.0;
+        double firstEchelonHandlingCost = 0.0;
         
         return firstEchelonTravelCost + firstEchelonHandlingCost;
     }
@@ -55,12 +55,12 @@ public class Solver {
      * @param solution
      * @return la valeur de la fonction objectif pour le second niveau de la solution
      */
-    public long evaluateSecondEchelon(Solution solution){
-        long secondEchelonTravelCostSum = 0;
-        long secondEchelonHandlingCostSum = 0;
+    public double evaluateSecondEchelon(Solution solution){
+        double secondEchelonTravelCostSum = 0.0;
+        double secondEchelonHandlingCostSum = 0.0;
         
         int secondEchelonVehicleCost = instance.getSecondEchelonFleet().getVehiclesCost();
-        long secondEchelonVehicleUsageCostSum = (long)solution.getSecondEchelonPermutations().size() * secondEchelonVehicleCost;
+        double secondEchelonVehicleUsageCostSum = (double)solution.getSecondEchelonPermutations().size() * secondEchelonVehicleCost;
         
         for(List<Assignment> permutation : solution.getSecondEchelonPermutations()){
             int permutationSize = permutation.size();

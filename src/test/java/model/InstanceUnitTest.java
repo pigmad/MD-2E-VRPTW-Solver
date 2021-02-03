@@ -70,11 +70,11 @@ public class InstanceUnitTest {
         Depot depot1 = instance.getDepots().get(1);
         Satellite satellite1 = instance.getSatellites().get(0);
         double computedDistance = instance.getDistance(depot0, depot1);
-        double expectedDistance = 5;
+        double expectedDistance = sqrt(25.0);
         assertEquals(expectedDistance, computedDistance);
         
         computedDistance = instance.getDistance(satellite1, depot1);
-        expectedDistance = 21;
+        expectedDistance = sqrt(424.0);
         assertEquals(expectedDistance, computedDistance);
     }
 }
