@@ -1,12 +1,13 @@
 package model;
 
 /**
- * Classe représentant un client
- * Une instance de cette classe est un sommet du graphe
- * Hérite de @see model.Site
+ * Classe représentant un client Une instance de cette classe est un sommet du
+ * graphe Hérite de @see model.Site
+ *
  * @author LASTENNET Dorian
  */
-public class Customer extends Site{
+public class Customer extends Site {
+
     private final int timeWindowStart; //date de début de la fenêtre de livraison du client
     private final int timeWindowEnd; //date de fin de la fenêtre de livraison du client
     private final int demandSize; //demande de livraison du client
@@ -17,9 +18,8 @@ public class Customer extends Site{
         this.timeWindowEnd = timeWindowEnd;
         this.demandSize = demandSize;
     }
-    
+
     //Accesseurs
-    
     public int getTimeWindowStart() {
         return timeWindowStart;
     }
@@ -30,10 +30,9 @@ public class Customer extends Site{
 
     public int getDemandSize() {
         return demandSize;
-    }   
-    
+    }
+
     //Surchage
-    
     @Override
     public String toString() {
         return "C" + this.getSiteID();

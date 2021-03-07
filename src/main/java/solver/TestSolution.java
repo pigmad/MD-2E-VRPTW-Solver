@@ -30,5 +30,4 @@ public class TestSolution implements Heuristic  {
         permutations.add(permutation);
         return new Solution(null,permutations);
     }
-    
 }

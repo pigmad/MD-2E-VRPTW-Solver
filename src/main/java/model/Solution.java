@@ -3,14 +3,15 @@ package model;
 import java.util.List;
 import java.util.ArrayList;
 
-
 /**
- * Classe qui contient la solution du problème
- * Une solution est un ensemble de permutation
- * Une permutation est un ensemble d'affectation : @see model.Assignment
+ * Classe qui contient la solution du problème Une solution est un ensemble de
+ * permutations Une permutation est un ensemble d'affectation : @see
+ * model.Assignment
+ *
  * @author LASTENNET Dorian
  */
 public class Solution {
+
     private List<ArrayList<Assignment>> firstEchelonPermutations;
     private List<ArrayList<Assignment>> secondEchelonPermutations;
 
@@ -18,9 +19,8 @@ public class Solution {
         this.firstEchelonPermutations = firstEchelonPermutation;
         this.secondEchelonPermutations = secondEchelonPermutation;
     }
-    
-    //Accesseurs
 
+    //Accesseurs
     public List<ArrayList<Assignment>> getFirstEchelonPermutations() {
         return firstEchelonPermutations;
     }
@@ -28,7 +28,7 @@ public class Solution {
     public void setFirstEchelonPermutations(List<ArrayList<Assignment>> firstEchelonPermutations) {
         this.firstEchelonPermutations = firstEchelonPermutations;
     }
-    
+
     public List<ArrayList<Assignment>> getSecondEchelonPermutations() {
         return secondEchelonPermutations;
     }
@@ -36,9 +36,8 @@ public class Solution {
     public void setSecondEchelonPermutations(List<ArrayList<Assignment>> secondEchelonPermutations) {
         this.secondEchelonPermutations = secondEchelonPermutations;
     }
-    
-    //Surchage 
 
+    //Surchage 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -48,7 +47,5 @@ public class Solution {
         sb.append('}');
         return sb.toString();
     }
-    
-    
-    
+
 }

@@ -5,13 +5,14 @@ import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-
 /**
- * Classe contenant toutes les données du problème à résoudre
- * Classe instancié par la classe de lecture de fichier @see utils.FileManager
+ * Classe contenant toutes les données du problème à résoudre Classe instancié
+ * par la classe de lecture de fichier @see utils.FileManager
+ *
  * @author LASTENNET Dorian
  */
 public class Instance {
+
     private final List<Depot> depots;
     private final List<Satellite> satellites;
     private final List<Customer> customers;
@@ -26,22 +27,21 @@ public class Instance {
         this.firstEchelonFleet = firstEchelonFleet;
         this.secondEchelonFleet = secondEchlonFleet;
         this.distanceMatrix = new ArrayList<>();
-        
+
         //Calcul de la matrice de distance
         List<Site> sites = Stream.of(customers, satellites, depots)
-                                .flatMap(x -> x.stream())
-                                .collect(Collectors.toList());
+                .flatMap(x -> x.stream())
+                .collect(Collectors.toList());
         for (Site siteLigne : sites) {
             ArrayList<Double> distances = new ArrayList<>();
-            for(Site siteColonne : sites){
+            for (Site siteColonne : sites) {
                 distances.add(siteLigne.computeDistance(siteColonne));
             }
             distanceMatrix.add(distances);
         }
     }
-    
+
     //Accesseurs
-    
     public List<Depot> getDepots() {
         return new ArrayList<>(depots);
     }
@@ -66,12 +66,11 @@ public class Instance {
         return distanceMatrix;
     }
 
-    public double getDistance(Site startSite, Site arrivalSite){
+    public double getDistance(Site startSite, Site arrivalSite) {
         return distanceMatrix.get(startSite.getGlobalSiteID()).get(arrivalSite.getGlobalSiteID());
     }
-    
+
     //Surchage
-    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

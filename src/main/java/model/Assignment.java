@@ -1,12 +1,14 @@
 package model;
 
 /**
- * Classe représentant l'affectation ou le séquencement (si aucun satellite n'est définie) des satellites et des clients
- * au sein d'une permutation.
- * Une permutation est un ensemble d'instances de cette classe
+ * Classe représentant l'affectation ou le séquencement (si aucun satellite
+ * n'est défini) des satellites et des clients au sein d'une permutation. Une
+ * permutation est un ensemble d'instances de cette classe
+ *
  * @author LASTENNET Dorian
  */
 public class Assignment {
+
     private Customer customer;
     private Satellite satellite;
 
@@ -21,7 +23,6 @@ public class Assignment {
     }
 
     //Accesseurs
-    
     public Customer getCustomer() {
         return customer;
     }
@@ -37,7 +38,7 @@ public class Assignment {
     public void setSatellite(Satellite satellite) {
         this.satellite = satellite;
     }
-    
+
     //Surchage 
     @Override
     public String toString() {
