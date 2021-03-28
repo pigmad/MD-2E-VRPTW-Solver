@@ -28,7 +28,7 @@ class SolverTest {
         instance = fm.readInstance();
 
         //setup a solver
-        solver = new Solver(instance);
+        solver = new Solver(true, instance);
         TestSolution solTest = new TestSolution();
         solver.setHeuristic(solTest);
 
@@ -58,9 +58,9 @@ class SolverTest {
 
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 136",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 136",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 136"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 106",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 106",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 106"
     })
     void TestEvaluateSecondEchelon(String testFilename, double expectedValue) throws FileManagerException, IOException {
         setUpTestData(testFilename);
@@ -70,9 +70,9 @@ class SolverTest {
 
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 136",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 136",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 136"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 106",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 106",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 106"
     })
     void TestEvaluateSolution(String testFilename, double expectedValue) throws FileManagerException, IOException {
         setUpTestData(testFilename);

@@ -19,13 +19,16 @@ public class Solver {
     private final Instance instance;
     private Solution solution;
     private Heuristic heuristic;
+    private boolean allowWaitingTime;
 
-    public Solver(Instance instance) {
+    public Solver(boolean allowWaitingTime, Instance instance) {
+        this.allowWaitingTime = allowWaitingTime;
         this.instance = instance;
         this.solution = new Solution();
     }
 
-    public Solver(Instance instance, Solution solution) {
+    public Solver(boolean allowWaitingTime, Instance instance, Solution solution) {
+        this.allowWaitingTime = allowWaitingTime;
         this.instance = instance;
         this.solution = solution;
     }
@@ -97,7 +100,7 @@ public class Solver {
                  */
                 if (currentSatellite.isEmpty()) {
                     secondEchelonTravelCostSum += nextSatellite.isEmpty() ? instance.getDistance(currentCustomer, nextCustomer) : instance.getDistance(currentCustomer, nextSatellite.get());
-                    secondEchelonHandlingCostSum += currentCustomer.getServiceTime();
+                    if(nextSatellite.isEmpty()){secondEchelonHandlingCostSum += currentCustomer.getServiceTime();}
                 } /**
                  * Si il y a un satellite dans la route il représente
                  * l'affectation d'un client au satellite on calcule le cout de
@@ -108,7 +111,7 @@ public class Solver {
                  */
                 else {
                     secondEchelonTravelCostSum += nextSatellite.isEmpty() ? instance.getDistance(currentSatellite.get(), nextCustomer) : instance.getDistance(currentSatellite.get(), nextSatellite.get());
-                    secondEchelonHandlingCostSum += currentSatellite.get().getServiceTime();
+                    if(nextSatellite.isEmpty()){secondEchelonHandlingCostSum += currentSatellite.get().getServiceTime();}
                 }
             }
         }
@@ -238,6 +241,7 @@ public class Solver {
         boolean isDoable = true;
         int routeSize = route.size();
         double currentTime = 0.0;
+        double penalty = 0.0;
         int iAssignment = 0;
         while (isDoable && iAssignment < routeSize - 1) {
             boolean isTimeWindowRespected = true;
@@ -253,29 +257,37 @@ public class Solver {
                 if (nextSatellite.isEmpty()) {
                     //arrivée au plus tôt du camion au client
                     double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentCustomer, nextCustomer));
+                    //on ajoute une pénalité si le véhicule est en avance
+                    penalty += startServiceTime == nextCustomer.getTimeWindowStart() ? penalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
                     isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
                 } //trajet client->satellite
                 else {
-                    currentTime += instance.getDistance(currentCustomer, nextSatellite.get()) + nextSatellite.get().getServiceTime();
+                    currentTime += instance.getDistance(currentCustomer, nextSatellite.get());
                 }
             }
             //Si satellite dans la route alors on viens d'un satellite
             else {
                 //trajet satellite->client
                 if (nextSatellite.isEmpty()) {
+                    //On ajoute le temps de chargement de la marchandise satellite
+                    currentTime += currentSatellite.get().getServiceTime();
                     //arrivée au plus tôt du camion au client
                     double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentSatellite.get(), nextCustomer));
+                    //on ajoute une pénalité si le véhicule est en avance
+                    penalty += startServiceTime == nextCustomer.getTimeWindowStart() ? penalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
+                    //on vérifie la contrainte
                     isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
                 } //trajet satellite->satellite
                 else {
-                    currentTime += instance.getDistance(currentSatellite.get(), nextSatellite.get()) + nextSatellite.get().getServiceTime();
+                    currentTime += instance.getDistance(currentSatellite.get(), nextSatellite.get());
                 }
             }
             isDoable = isTimeWindowRespected;
             iAssignment++;
         }
+        if(!allowWaitingTime){isDoable = penalty==0.0;}
         return isDoable;
     }
 

@@ -52,7 +52,7 @@ public class Main {
                     System.out.println(instance.toString());
                     
                     //instantiation d'un solveur
-                    Solver solver = new Solver(instance);
+                    Solver solver = new Solver(true, instance);
                     solver.setHeuristic(new ClarkeWright());
                     
                     //timer d'exécution

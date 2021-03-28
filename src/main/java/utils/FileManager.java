@@ -64,9 +64,11 @@ public class FileManager {
         ArrayList<Customer> customers = new ArrayList<>();
         Fleet firstEchelonFleet = new Fleet(0, 0, 0, 0);
         Fleet secondEchelonFleet = new Fleet(0, 0, 0, 0);
-        //Pattern pour match le nombre de chacun des sites dans le nom du fichier 
+        //Pattern pour match le nombre de chacun des sites dans le nom du fichier (ex: 6,25,55) :
+        //(1 chiffre ou plus) et (1 caractère ',') et (1 chiffre ou plus) et (1 caractère ',') et (1 chiffre ou plus)
         final Pattern FILENAMEPATERN = Pattern.compile("\\d+,\\d+,\\d+");
-        //Pattern pour match chaque élément d'une ligne du fichier
+        //Pattern pour match chaque élément d'une ligne du fichier  :
+        // (0 ou 1 caractère '-') et (1 chiffre ou plus)
         final Pattern LINEPATERN = Pattern.compile("-?\\d+");
 
         Matcher filepathMatcher = FILENAMEPATERN.matcher(instanceFilename);
