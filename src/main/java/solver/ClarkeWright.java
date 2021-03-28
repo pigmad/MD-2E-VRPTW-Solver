@@ -8,7 +8,6 @@ import model.Instance;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -80,7 +79,7 @@ public class ClarkeWright implements Heuristic {
         for (int i = 0; i < satellites.size(); i++) {
             for (int j = 0; j < satellites.size(); j++) {
                 for (int k = 0; k < customers.size(); k++) {
-                    for (int l = k +1; l < customers.size(); l++) {
+                    for (int l = k + 1; l < customers.size(); l++) {
                         double savingValue;
                         if (satellites.get(i).equals(satellites.get(j))) {
                             savingValue = instance.getDistance(satellites.get(i), customers.get(k)) + instance.getDistance(satellites.get(i), customers.get(l)) - instance.getDistance(customers.get(k), customers.get(l));
@@ -131,21 +130,10 @@ public class ClarkeWright implements Heuristic {
      * @return la route ou c est en première position, un tableau vide sinon
      */
     public List<Assignment> findRouteFirst(Satellite s, Customer c, List<List<Assignment>> routes) {
-        //pour chaque route on récupère la première assignation sans client
+        //pour chaque route on compare le premier element avec c et s
         for (List<Assignment> route : routes) {
-            Iterator<Assignment> assignmentIt = route.iterator();
-            boolean found = true;
-            //pour chaque element de la route
-            while (assignmentIt.hasNext() && found) {
-                Assignment assignment = assignmentIt.next();
-                //on passe toutes les affectations et on compare le premier client de la route
-                if (assignment.getSatellite().isEmpty()) {
-                    //si on ne trouve pas on passera à la route suivante
-                    found = assignment.getCustomer().equals(c) && route.contains(new Assignment(c, s));
-                    if (found) {
-                        return route;
-                    }
-                }
+            if(route.get(0).getSatellite().get().equals(s) && route.get(0).getCustomer().equals(c)){
+                return route;
             }
         }
         return new ArrayList<>();
@@ -164,12 +152,25 @@ public class ClarkeWright implements Heuristic {
      * @return la route ou c est en dernière position, un tableau vide sinon
      */
     public List<Assignment> findRouteLast(Satellite s, Customer c, List<List<Assignment>> routes) {
-        //pour chaque route on compare le dernier element avec c
+        //pour chaque route on compare le dernier element avec c et on cherche si son affectation est a satellite s
         for (List<Assignment> route : routes) {
-            boolean sInRoute = route.lastIndexOf(new Assignment(c, s)) >= 0;
-            boolean cInRoute = route.get(route.size() - 1).getCustomer().equals(c);
-            if (sInRoute && cInRoute) {
-                return route;
+            //on compare le dernier séquencement à c
+            if (route.get(route.size()-1).getCustomer().equals(c)){
+                //on parcours la permutation à l'envers jusqu'à l'affectation de c et on compare 
+                int index = route.size()-2;
+                boolean sInRoute = true;
+                while(sInRoute){
+                    Assignment assign = route.get(index);
+                    if(assign.getCustomer().equals(c)){
+                        if(assign.getSatellite().get().equals(s)){
+                            return route;
+                        }
+                        else{
+                            sInRoute = false;
+                        }
+                    }
+                    index--;
+                }
             }
         }
         return new ArrayList<>();
@@ -190,8 +191,8 @@ public class ClarkeWright implements Heuristic {
         //On merge toute la route i
         mergedRoute.addAll(iRoute);
         //index de l'affectation du client i à sI dans la route i
-        int k = iRoute.lastIndexOf(new Assignment(saving.getiCustomer(), saving.getiSatellite()));
-        // on ajoute les affectations des clients vers le satellite sI de la route j à partir de l'indice k
+        int k = iRoute.indexOf(new Assignment(saving.getiCustomer(), saving.getiSatellite()))+1;
+        // on ajoute les affectations des clients vers le satellite sI de la route j à partir de l'indice k+1
         for (Assignment a : jRoute) {
             if (a.getSatellite().isPresent()) {
                 mergedRoute.add(k, a);
