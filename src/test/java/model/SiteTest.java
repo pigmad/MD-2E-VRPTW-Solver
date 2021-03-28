@@ -1,29 +1,29 @@
 package model;
 
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.TestInstance.Lifecycle;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.Math.sqrt;
 
 /**
- *
+ * Classe de test JUnit pour les classes sites.
+ * 
  * @author LASTENNET Dorian
  */
-@TestInstance(Lifecycle.PER_CLASS)
-class SiteUnitTest {
+class SiteTest {
 
+    private Customer customer;
+    private Satellite satellite;
     private Depot depot1;
     private Depot depot2;
-    private Satellite satellite1;
-    private Customer customer1;
-
-    @BeforeAll
-    void setUpClass() {
-        depot1 = new Depot(1, 0, 8, 20, 0);
-        depot2 = new Depot(2, 1, 13, 20, 0);
-        satellite1 = new Satellite(1, 2, -10, 10, 10);
-        customer1 = new Customer(1, 3, -50, -10, 10, 0, 50, 70);
+    
+    @BeforeEach
+    void setUp() {
+        customer = new Customer(1, 0, 5, 10, 10, 15, 25, 10);
+        satellite = new Satellite(1, 1, 8, 20, 10);
+        depot1 = new Depot(1, 2, 8, 30, 10);
+        depot2 = new Depot(2, 3, 13, 30, 10);
     }
 
     @Test
@@ -48,16 +48,16 @@ class SiteUnitTest {
     }
 
     @Test
-    void TestComputeDistanceBetweenDepotSattelite() {
-        double computedDistance = depot1.computeDistance(satellite1);
-        double expectedDistance = sqrt(424.0);
+    void TestComputeDistanceBetweenDepotSatellite() {
+        double computedDistance = depot1.computeDistance(satellite);
+        double expectedDistance = sqrt(100);
         assertEquals(expectedDistance, computedDistance);
     }
 
     @Test
     void TestComputeDistanceBetweenSatelliteCustomer() {
-        double computedDistance = satellite1.computeDistance(customer1);
-        double expectedDistance = sqrt(2000.0);
+        double computedDistance = satellite.computeDistance(customer);
+        double expectedDistance = sqrt(109);
         assertEquals(expectedDistance, computedDistance);
     }
 }
