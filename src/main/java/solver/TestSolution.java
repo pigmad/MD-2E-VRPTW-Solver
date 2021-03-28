@@ -15,9 +15,14 @@ import java.util.List;
  * @author LASTENNET Dorian
  */
 public class TestSolution implements Heuristic  {
+    private Solver solver;
+    
+    public TestSolution(Solver solver){
+        this.solver = solver;
+    }
 
     @Override
-    public Solution run(Solver solver) {
+    public Solution solve() {
         List<Customer> customers = solver.getInstance().getCustomers();
         List<Satellite> satellites = solver.getInstance().getSatellites();
         List<List<Assignment>> permutations = new ArrayList<>();

@@ -18,23 +18,22 @@ public class Solver {
 
     private final Instance instance;
     private Solution solution;
-    private Heuristic heuristic;
     private boolean allowWaitingTime;
 
-    public Solver(boolean allowWaitingTime, Instance instance) {
+    public Solver(Instance instance, boolean allowWaitingTime) {
         this.allowWaitingTime = allowWaitingTime;
         this.instance = instance;
         this.solution = new Solution();
     }
 
-    public Solver(boolean allowWaitingTime, Instance instance, Solution solution) {
+    public Solver(Instance instance, Solution solution, boolean allowWaitingTime) {
         this.allowWaitingTime = allowWaitingTime;
         this.instance = instance;
         this.solution = solution;
     }
 
-    public void solveInstance() {
-        solution = heuristic.run(this);
+    public void solveInstance(Heuristic heuristic) {
+        solution = heuristic.solve();
     }
 
     /**
@@ -305,10 +304,6 @@ public class Solver {
     //Accesseurs
     public Instance getInstance() {
         return instance;
-    }
-
-    public void setHeuristic(Heuristic heuristic) {
-        this.heuristic = heuristic;
     }
 
     public Solution getSolution() {

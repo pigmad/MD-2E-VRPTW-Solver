@@ -82,4 +82,17 @@ public abstract class Site {
         // L'id global est unique, on l'utilise comme comparaison 
         return Integer.compare(globalSiteID, s.globalSiteID) == 0;
     }
+
+    /**
+     * Surchage obligatoire si surchage de equals
+     * @return hash de l'objet
+     */
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 37 * hash + this.globalSiteID;
+        return hash;
+    }
+    
+    
 }

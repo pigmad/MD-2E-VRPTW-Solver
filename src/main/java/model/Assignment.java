@@ -1,5 +1,6 @@
 package model;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -95,5 +96,17 @@ public class Assignment {
         else {
             return false;
         }
+    }
+
+    /**
+     * Surchage obligatoire si surchage de equals
+     * @return hash de l'objet
+     */
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 79 * hash + Objects.hashCode(this.customer);
+        hash = 79 * hash + Objects.hashCode(this.satellite);
+        return hash;
     }
 }

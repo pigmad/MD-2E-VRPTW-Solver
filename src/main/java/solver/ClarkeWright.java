@@ -9,6 +9,7 @@ import model.Instance;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Implémentation de l'algorithme de CW adapté au problème. <br>
@@ -19,9 +20,14 @@ import java.util.List;
  * @author LASTENNET Dorian
  */
 public class ClarkeWright implements Heuristic {
+    private Solver solver;
+    
+    public ClarkeWright(Solver solver){
+        this.solver = solver;
+    }
 
     @Override
-    public Solution run(Solver solver) {
+    public Solution solve() {
         //calcul de la liste des savings
         List<Saving> savingsList = computeSavings(solver.getInstance());
 
@@ -132,8 +138,11 @@ public class ClarkeWright implements Heuristic {
     public List<Assignment> findRouteFirst(Satellite s, Customer c, List<List<Assignment>> routes) {
         //pour chaque route on compare le premier element avec c et s
         for (List<Assignment> route : routes) {
-            if(route.get(0).getSatellite().get().equals(s) && route.get(0).getCustomer().equals(c)){
-                return route;
+            Optional<Satellite> assignSat = route.get(0).getSatellite();
+            if(assignSat.isPresent()){
+                if (route.get(0).getCustomer().equals(c) && assignSat.get().equals(s)) {
+                    return route;
+                }
             }
         }
         return new ArrayList<>();
@@ -162,11 +171,14 @@ public class ClarkeWright implements Heuristic {
                 while(sInRoute){
                     Assignment assign = route.get(index);
                     if(assign.getCustomer().equals(c)){
-                        if(assign.getSatellite().get().equals(s)){
+                        Optional<Satellite> assignSat = assign.getSatellite();
+                        if(assignSat.isPresent()){
+                            if(assignSat.get().equals(s)){
                             return route;
-                        }
-                        else{
-                            sInRoute = false;
+                            }
+                            else{
+                                sInRoute = false;
+                            }
                         }
                     }
                     index--;
@@ -338,7 +350,7 @@ public class ClarkeWright implements Heuristic {
                 }
             }
         }
-        if (aloneCustomers.isEmpty()) {
+        if (!aloneCustomers.isEmpty()) {
             //On retire les routes où les clients sont seuls
             routes.removeIf(route -> route.size() == 2);
             //On cherche le satellite le plus proche des clients seuls et on réinsère les clients dans la solution

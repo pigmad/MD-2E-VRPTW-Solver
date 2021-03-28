@@ -52,13 +52,14 @@ public class Main {
                     System.out.println(instance.toString());
                     
                     //instantiation d'un solveur
-                    Solver solver = new Solver(true, instance);
-                    solver.setHeuristic(new ClarkeWright());
+                    Solver solver = new Solver(instance, true);
+                    ClarkeWright ck = new ClarkeWright(solver);
+                    
                     
                     //timer d'exécution
                     long startTime = System.nanoTime();
                     //récuperation de la solution
-                    solver.solveInstance();
+                    solver.solveInstance(ck);
                     Solution solution = solver.getSolution();
                     System.out.println(solution);
                     //fin timer

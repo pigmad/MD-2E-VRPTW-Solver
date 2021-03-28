@@ -68,7 +68,7 @@ class FileManagerTest {
         FileManager fm = new FileManager(filename);
         Instance instance = fm.readInstance();
         Solution solution = stubSolution(instance);
-        Solver solver = new Solver(true, instance, solution);
+        Solver solver = new Solver(instance, solution, true);
         fm.writeSolution(solver, filename + "-result.txt");
         File file = new File(filename + "-result.txt");
         assertTrue(file.exists());
@@ -81,7 +81,7 @@ class FileManagerTest {
         FileManager fm = new FileManager(filename);
         Instance instance = fm.readInstance();
         Solution solution = stubSolution(instance);
-        Solver solver = new Solver(true, instance, solution);
+        Solver solver = new Solver(instance, solution, true);
         fm.writeGlobalSolution("testInstanceValide-2,3,3.txt", 45, solver, filename + "-globalSolution.txt");
         File file = new File(filename + "-globalSolution.txt");
         assertTrue(file.exists());

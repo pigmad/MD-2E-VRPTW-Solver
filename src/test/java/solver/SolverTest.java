@@ -23,17 +23,14 @@ class SolverTest {
     private Solution solution;
 
     void setUpTestData(String instanceTestFile) throws FileManagerException, IOException {
-        //Read instance from test file
+        //Lecture de l'instance depuis le fichier
         FileManager fm = new FileManager(instanceTestFile);
         instance = fm.readInstance();
 
-        //setup a solver
-        solver = new Solver(true, instance);
-        TestSolution solTest = new TestSolution();
-        solver.setHeuristic(solTest);
-
-        //set up a solution for test instances
-        solver.solveInstance();
+        //création d'un solver et d'une solution test
+        solver = new Solver(instance, true);
+        TestSolution solTest = new TestSolution(solver);
+        solver.solveInstance(solTest);
         solution = solver.getSolution();
     }
 
