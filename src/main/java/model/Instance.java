@@ -2,13 +2,15 @@ package model;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Classe contenant toutes les données du problème à résoudre Classe instancié
- * par la classe de lecture de fichier @see utils.FileManager
- *
+ * Classe contenant toutes les données du problème à résoudre. <br>
+ * Classe instancié par la classe de lecture de fichier. 
+ * 
+ * @see utils.FileManager
  * @author LASTENNET Dorian
  */
 public class Instance {
@@ -18,7 +20,7 @@ public class Instance {
     private final List<Customer> customers;
     private final Fleet firstEchelonFleet;
     private final Fleet secondEchelonFleet;
-    private final List<List<Double>> distanceMatrix;
+    private final List<List<Double>> distanceMatrix; //indexé sur le globalSiteID de chaque site
 
     public Instance(List<Depot> depots, List<Satellite> satellites, List<Customer> customers, Fleet firstEchelonFleet, Fleet secondEchlonFleet) {
         this.depots = depots;
@@ -33,7 +35,7 @@ public class Instance {
                 .flatMap(x -> x.stream())
                 .collect(Collectors.toList());
         for (Site siteLigne : sites) {
-            ArrayList<Double> distances = new ArrayList<>();
+            List<Double> distances = new ArrayList<>();
             for (Site siteColonne : sites) {
                 distances.add(siteLigne.computeDistance(siteColonne));
             }
@@ -63,14 +65,17 @@ public class Instance {
     }
 
     public List<List<Double>> getDistanceMatrix() {
-        return distanceMatrix;
+        return Collections.unmodifiableList(distanceMatrix);
     }
 
     public double getDistance(Site startSite, Site arrivalSite) {
         return distanceMatrix.get(startSite.getGlobalSiteID()).get(arrivalSite.getGlobalSiteID());
     }
 
-    //Surchage
+    /**
+     * Représentation de l'objet en texte.
+     * @return texte
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

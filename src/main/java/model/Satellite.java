@@ -1,9 +1,11 @@
 package model;
 
 /**
- * Classe représentant un satellite Une instance de cette classe est un sommet
- * du graphe Hérite de @see model.Site
- *
+ * Classe représentant un satellite. <br>
+ * Une instance de cette classe est un sommet du graphe. <br>
+ * Hérite de la classe site. <br>
+ * 
+ * @see model.Site
  * @author LASTENNET Dorian
  */
 public class Satellite extends Site {
@@ -12,7 +14,10 @@ public class Satellite extends Site {
         super(siteID, globalSiteID, xCoordinate, yCoordinate, serviceTime);
     }
 
-    //Surchage 
+    /**
+     * Représentation de l'objet en texte.
+     * @return texte
+     */
     @Override
     public String toString() {
         return "S" + this.getSiteID();

@@ -1,8 +1,9 @@
 package utils;
 
 /**
- * Classe d'exceptions personnalisées pour la classe de lecture de fichier
+ * Classe d'exception pour la classe de lecture de fichier.
  *
+ * @see utils.FileManager
  * @author LASTENNET Dorian
  */
 public class FileManagerException extends Exception {

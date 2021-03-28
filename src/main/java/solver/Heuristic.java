@@ -3,7 +3,7 @@ package solver;
 import model.Solution;
 
 /**
- * Interface pour l'implémentation des heuristiques
+ * Interface pour l'implémentation des heuristiques.
  *
  * @author LASTENNET Dorian
  */

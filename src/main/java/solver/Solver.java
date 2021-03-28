@@ -7,10 +7,10 @@ import model.Instance;
 import model.Solution;
 
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Optional;
 
 /**
- * Classe solveur chargé de gérer la résolution de l'instance lue
+ * Classe solveur chargé de gérer la résolution de l'instance lue.
  *
  * @author LASTENNET Dorian
  */
@@ -22,6 +22,7 @@ public class Solver {
 
     public Solver(Instance instance) {
         this.instance = instance;
+        this.solution = new Solution();
     }
 
     public Solver(Instance instance, Solution solution) {
@@ -34,9 +35,9 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation d'une solution
+     * Fonction d'évaluation d'une solution.
      *
-     * @param solution
+     * @param solution la solution à évaluer
      * @return la valeur de la fonction objectif pour la solution
      */
     public double evaluateSolution(Solution solution) {
@@ -44,9 +45,9 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation du premier niveau
+     * Fonction d'évaluation du premier niveau.
      *
-     * @param solution
+     * @param solution la solution à évaluer
      * @return la valeur de la fonction objectif pour le premier niveau de la
      * solution
      */
@@ -58,11 +59,10 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation du second niveau
+     * Fonction d'évaluation du second niveau.
      *
-     * @param solution
-     * @return la valeur de la fonction objectif pour le second niveau de la
-     * solution
+     * @param solution la solution à évaluer
+     * @return la valeur de la fonction objectif pour le second niveau de la solution
      */
     public double evaluateSecondEchelon(Solution solution) {
         double secondEchelonTravelCostSum = 0.0;
@@ -71,44 +71,44 @@ public class Solver {
         int secondEchelonVehicleCost = instance.getSecondEchelonFleet().getVehiclesCost();
         double secondEchelonVehicleUsageCostSum = (double) solution.getSecondEchelonPermutations().size() * secondEchelonVehicleCost;
 
-        for (List<Assignment> permutation : solution.getSecondEchelonPermutations()) {
-            int permutationSize = permutation.size();
-            for (int iAssignment = 0; iAssignment < permutationSize; iAssignment++) {
+        for (List<Assignment> route : solution.getSecondEchelonPermutations()) {
+            int routeSize = route.size();
+            for (int iAssignment = 0; iAssignment < routeSize; iAssignment++) {
                 //Assignation courante
-                Customer currentCustomer = permutation.get(iAssignment).getCustomer();
-                Satellite currentSatellite = permutation.get(iAssignment).getSatellite();
+                Customer currentCustomer = route.get(iAssignment).getCustomer();
+                Optional<Satellite> currentSatellite = route.get(iAssignment).getSatellite();
                 //Permutation suivante
                 Customer nextCustomer;
-                Satellite nextSatellite;
-                //Si on atteint la fin de la permutation alors le véhicule doit retourner à son point d'origine
-                if (iAssignment == permutationSize - 1) {
-                    nextCustomer = permutation.get(0).getCustomer();
-                    nextSatellite = permutation.get(0).getSatellite();
+                Optional<Satellite> nextSatellite;
+                //Si on atteint la fin de la route alors le véhicule doit retourner à son point d'origine
+                if (iAssignment == routeSize - 1) {
+                    nextCustomer = route.get(0).getCustomer();
+                    nextSatellite = route.get(0).getSatellite();
                 } else {
-                    nextCustomer = permutation.get(iAssignment + 1).getCustomer();
-                    nextSatellite = permutation.get(iAssignment + 1).getSatellite();
+                    nextCustomer = route.get(iAssignment + 1).getCustomer();
+                    nextSatellite = route.get(iAssignment + 1).getSatellite();
                 }
                 /**
-                 * Si aucun satellite dans la permutation alors on viens d'un
+                 * Si aucun satellite dans la route alors on viens d'un
                  * client on calcule le cout de trajet du client dans la
-                 * permutation i au satellite dans la permutation i ou au client
+                 * route i au satellite dans la route i ou au client
                  * i+1 et le cout de déchargement du véhicule
                  *
                  */
-                if (currentSatellite == null) {
-                    secondEchelonTravelCostSum += nextSatellite == null ? instance.getDistance(currentCustomer, nextCustomer) : instance.getDistance(currentCustomer, nextSatellite);
+                if (currentSatellite.isEmpty()) {
+                    secondEchelonTravelCostSum += nextSatellite.isEmpty() ? instance.getDistance(currentCustomer, nextCustomer) : instance.getDistance(currentCustomer, nextSatellite.get());
                     secondEchelonHandlingCostSum += currentCustomer.getServiceTime();
                 } /**
-                 * Si il y a un satellite dans la permutation il représente
+                 * Si il y a un satellite dans la route il représente
                  * l'affectation d'un client au satellite on calcule le cout de
-                 * trajet du client dans la permutation i au satellite dans la
-                 * permutation i ou au client i+1 et le cout de chargement du
+                 * trajet du client dans la route i au satellite dans la
+                 * route i ou au client i+1 et le cout de chargement du
                  * véhicule
                  *
                  */
                 else {
-                    secondEchelonTravelCostSum += nextSatellite == null ? instance.getDistance(currentSatellite, nextCustomer) : instance.getDistance(currentSatellite, nextSatellite);
-                    secondEchelonHandlingCostSum += currentSatellite.getServiceTime();
+                    secondEchelonTravelCostSum += nextSatellite.isEmpty() ? instance.getDistance(currentSatellite.get(), nextCustomer) : instance.getDistance(currentSatellite.get(), nextSatellite.get());
+                    secondEchelonHandlingCostSum += currentSatellite.get().getServiceTime();
                 }
             }
         }
@@ -116,14 +116,13 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation de la faisabilité de la solution
+     * Fonction d'évaluation de la faisabilité de la solution.
      *
-     * @param solution ensembles des routes
+     * @param solution la solution à évaluer
      * @return booléen indiquant la faisabilité de la solution
      */
     public boolean isSolutionDoable(Solution solution) {
         return isFirstEchelonCapacitiesRespected(solution)
-                && isFirstEchelonTimeWindowsRespected(solution)
                 && isFirstEchelonVehiclesNumberRespected(solution)
                 && isSecondEchelonCapacitiesRespected(solution)
                 && isSecondEchelonTimeWindowsRespected(solution)
@@ -131,10 +130,9 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation du respect de la contrainte de capacité pour le
-     * premier niveau
+     * Fonction d'évaluation du respect de la contrainte de capacité pour le premier niveau.
      *
-     * @param solution ensembles des routes
+     * @param solution la solution à évaluer
      * @return booléen indiquant la faisabilité de la contrainte
      */
     public boolean isFirstEchelonCapacitiesRespected(Solution solution) {
@@ -143,34 +141,36 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation du respect de la contrainte de fenêtre de temps
-     * pour le premier niveau
+     * Fonction d'évaluation du respect de la contrainte de nombre de véhicules pour le premier niveau.
      *
-     * @param solution ensembles des routes
-     * @return booléen indiquant la faisabilité de la contrainte
-     */
-    public boolean isFirstEchelonTimeWindowsRespected(Solution solution) {
-        boolean isDoable = true;
-        return isDoable;
-    }
-
-    /**
-     * Fonction d'évaluation du respect de la contrainte de nombre de véhicules
-     * pour le premier niveau
-     *
-     * @param solution ensembles des routes
+     * @param solution la solution à évaluer
      * @return booléen indiquant la faisabilité de la contrainte
      */
     public boolean isFirstEchelonVehiclesNumberRespected(Solution solution) {
-        return true;
-        //return solution.getFirstEchelonPermutations().size() <= instance.getFirstEchelonFleet().getVehiclesNumber();
+        return solution.getFirstEchelonPermutations().size() <= instance.getFirstEchelonFleet().getVehiclesNumber();
+    }
+    
+    /**
+     * Fonction d'évaluation du respect de la contrainte que tous les clients 
+     * doivent être livrés par un véhicule unique.
+     * 
+     * @param solution la solution à évaluer
+     * @return booléen indiquant la faisabilité de la contrainte
+     */
+    public boolean areAllCustomersDelivered(Solution solution){
+        return solution.getSecondEchelonPermutations()
+                .stream()
+                .flatMap(route -> route.stream())
+                .filter(assign -> assign.getSatellite().isPresent())
+                .distinct()
+                .count() == instance.getCustomers().size();
     }
 
     /**
      * Fonction d'évaluation du respect de la contrainte de capacité pour le
-     * second niveau
+     * second niveau.
      *
-     * @param solution ensembles des routes
+     * @param solution la solution à évaluer
      * @return booléen indiquant la faisabilité de la contrainte
      */
     public boolean isSecondEchelonCapacitiesRespected(Solution solution) {
@@ -184,24 +184,26 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation de la faisabilité des capacités d'une route
+     * Fonction d'évaluation de la faisabilité des capacités d'une route.
      *
-     * @param permutation la route à évaluer
+     * @param route la route à évaluer
      * @return booléen indiquant si la route est faisable
      */
-    public boolean isSecondEchelonPermutationCapacitiesRespected(ArrayList<Assignment> permutation) {
+    public boolean isSecondEchelonPermutationCapacitiesRespected(List<Assignment> route) {
         boolean isDoable = true;
-        int permutationSize = permutation.size();
+        int routeSize = route.size();
         int fleetLoad = 0;
         int iAssignment = 0;
-        while (isDoable && iAssignment < permutationSize) {
+        while (isDoable && iAssignment < routeSize) {
             //Permutation courante
-            Customer currentCustomer = permutation.get(iAssignment).getCustomer();
-            Satellite currentSatellite = permutation.get(iAssignment).getSatellite();
-            if (currentSatellite == null) {
-                fleetLoad -= currentCustomer.getDemandSize();
-            } else {
+            Customer currentCustomer = route.get(iAssignment).getCustomer();
+            Optional<Satellite> currentSatellite = route.get(iAssignment).getSatellite();
+            //Il s'agit de l'affectation d'un client donc on charge le camion
+            if (currentSatellite.isPresent()) {
                 fleetLoad += currentCustomer.getDemandSize();
+                
+            } else {
+                fleetLoad -= currentCustomer.getDemandSize();
             }
             isDoable = fleetLoad <= instance.getSecondEchelonFleet().getVehiclesCapacity();
             iAssignment++;
@@ -211,9 +213,9 @@ public class Solver {
 
     /**
      * Fonction d'évaluation du respect de la contrainte de fenêtre de temps
-     * pour le second niveau
+     * pour le second niveau.
      *
-     * @param solution ensemble des routes
+     * @param solution la solution à évaluer
      * @return booléen indiquant la faisabilité de la contrainte
      */
     public boolean isSecondEchelonTimeWindowsRespected(Solution solution) {
@@ -227,52 +229,48 @@ public class Solver {
     }
 
     /**
-     * Fonction d'évaluation de la faisabilité des fenêtres de temps d'une route
+     * Fonction d'évaluation de la faisabilité des fenêtres de temps d'une route.
      *
-     * @param permutation la route à évaluer
+     * @param route la route à évaluer
      * @return booléen indiquant si la route est faisable
      */
-    public boolean isSecondEchelonPermutationTimeWindowsRespected(ArrayList<Assignment> permutation) {
+    public boolean isSecondEchelonPermutationTimeWindowsRespected(List<Assignment> route) {
         boolean isDoable = true;
-        int permutationSize = permutation.size();
-        double currentTime = 0.0; //interdépendance avec niveau 1 ????
+        int routeSize = route.size();
+        double currentTime = 0.0;
         int iAssignment = 0;
-        while (isDoable && iAssignment < permutationSize - 1) {
+        while (isDoable && iAssignment < routeSize - 1) {
             boolean isTimeWindowRespected = true;
             //Permutation courante
-            Customer currentCustomer = permutation.get(iAssignment).getCustomer();
-            Satellite currentSatellite = permutation.get(iAssignment).getSatellite();
+            Customer currentCustomer = route.get(iAssignment).getCustomer();
+            Optional<Satellite> currentSatellite = route.get(iAssignment).getSatellite();
             //Permutatiotn suivante
-            Customer nextCustomer = permutation.get(iAssignment + 1).getCustomer();
-            Satellite nextSatellite = permutation.get(iAssignment + 1).getSatellite();
-            /**
-             * Si aucun satellite dans la permutation alors on viens d'un client
-             * on calcule le cout de trajet du client dans la permutation i au
-             * satellite dans la permutation i ou au client i+1
-             */
-            if (currentSatellite == null) {
-                if (nextSatellite == null) {
-                    currentTime += currentCustomer.computeDistance(nextCustomer);
-                    isTimeWindowRespected = currentTime >= nextCustomer.getTimeWindowStart() && currentTime <= nextCustomer.getTimeWindowEnd();
-                } else {
-                    currentTime += currentCustomer.computeDistance(nextSatellite);
+            Customer nextCustomer = route.get(iAssignment + 1).getCustomer();
+            Optional<Satellite> nextSatellite = route.get(iAssignment + 1).getSatellite();
+            //Si aucun satellite dans la route alors on viens d'un client
+            if (currentSatellite.isEmpty()) {
+                //trajet client->client
+                if (nextSatellite.isEmpty()) {
+                    //arrivée au plus tôt du camion au client
+                    double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentCustomer, nextCustomer));
+                    isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
+                    currentTime = startServiceTime + nextCustomer.getServiceTime();
+                } //trajet client->satellite
+                else {
+                    currentTime += instance.getDistance(currentCustomer, nextSatellite.get()) + nextSatellite.get().getServiceTime();
                 }
-            } /**
-             * Si il y a un satellite dans la permutation il représente
-             * l'affectation d'un client au satellite on calcule le cout de
-             * trajet du client dans la permutation i au satellite dans la
-             * permutation i ou au client i+1
-             */
+            }
+            //Si satellite dans la route alors on viens d'un satellite
             else {
-                if (nextSatellite == null) {
-                    if (currentTime == 0.0) {
-                        currentTime = nextCustomer.getTimeWindowStart();
-                    } else {
-                        currentTime += currentSatellite.computeDistance(nextCustomer);
-                    }
-                    isTimeWindowRespected = currentTime >= nextCustomer.getTimeWindowStart() && currentTime <= nextCustomer.getTimeWindowEnd();
-                } else {
-                    currentTime += currentSatellite.computeDistance(nextSatellite);
+                //trajet satellite->client
+                if (nextSatellite.isEmpty()) {
+                    //arrivée au plus tôt du camion au client
+                    double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentSatellite.get(), nextCustomer));
+                    isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
+                    currentTime = startServiceTime + nextCustomer.getServiceTime();
+                } //trajet satellite->satellite
+                else {
+                    currentTime += instance.getDistance(currentSatellite.get(), nextSatellite.get()) + nextSatellite.get().getServiceTime();
                 }
             }
             isDoable = isTimeWindowRespected;
@@ -283,9 +281,9 @@ public class Solver {
 
     /**
      * Fonction d'évaluation du respect de la contrainte de nombre de véhicules
-     * pour le second niveau
+     * pour le second niveau.
      *
-     * @param solution ensembles des routes
+     * @param solution la solution à évaluer
      * @return booléen indiquant la faisabilité de la contrainte
      */
     public boolean isSecondEchelonVehiclesNumberRespected(Solution solution) {

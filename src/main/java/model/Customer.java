@@ -1,9 +1,11 @@
 package model;
 
 /**
- * Classe représentant un client Une instance de cette classe est un sommet du
- * graphe Hérite de @see model.Site
- *
+ * Classe représentant un client. <br>
+ * Une instance de cette classe est un sommet du graphe. <br>
+ * Hérite de la classe site.
+ * 
+ * @see model.Site
  * @author LASTENNET Dorian
  */
 public class Customer extends Site {
@@ -32,7 +34,10 @@ public class Customer extends Site {
         return demandSize;
     }
 
-    //Surchage
+    /**
+     * Représentation de l'objet en texte.
+     * @return texte
+     */
     @Override
     public String toString() {
         return "C" + this.getSiteID();

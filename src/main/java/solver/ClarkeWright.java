@@ -4,6 +4,7 @@ import model.Assignment;
 import model.Customer;
 import model.Satellite;
 import model.Solution;
+import model.Instance;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -11,7 +12,10 @@ import java.util.Iterator;
 import java.util.List;
 
 /**
- * Implémentation de l'algorithme de Clarke & Wright adapté au problème
+ * Implémentation de l'algorithme de CW adapté au problème. <br>
+ * On considère deux types de fusion pour des clients i et j: <br>
+ * soit les satellites de routes à fusionner sont identiques alors on conserve la fusion classique <br>
+ * soit ils sont différents et on obtient satI,i,Sj,j,Si.
  *
  * @author LASTENNET Dorian
  */
@@ -19,55 +23,72 @@ public class ClarkeWright implements Heuristic {
 
     @Override
     public Solution run(Solver solver) {
-        List<Satellite> satellites = solver.getInstance().getSatellites();
-        List<Customer> customers = solver.getInstance().getCustomers();
-
         //calcul de la liste des savings
-        ArrayList<Saving> savingsList = computeSavings(satellites, customers);
-        System.out.println("Taille liste savings : " + savingsList.size() + "\n");
+        List<Saving> savingsList = computeSavings(solver.getInstance());
 
         //création de la solution initiale où tous les clients sont reliés chacun des satellites par un véhicule
-        List<ArrayList<Assignment>> permutations = new ArrayList<>();
-        for (Satellite s : satellites) {
-            for (Customer c : customers) {
-                ArrayList<Assignment> permutation = new ArrayList<>();
-                permutation.add(new Assignment(c, s));
-                permutation.add(new Assignment(c));
-                permutations.add(permutation);
-            }
-        }
-        System.out.println("Solution initiale : " + permutations + "\n");
+        List<List<Assignment>> routes = createInitialSolution(solver.getInstance());
 
         for (Saving saving : savingsList) {
-            //Traitement du savings 
-            System.out.println(saving.toString());
-            savingsTreatment(saving, permutations, solver);
-            System.out.println("");
+            //Traitement du savings
+            savingsTreatment(saving, routes, solver);
         }
-        System.out.println("Suppression des routes restantes qui ne respectent pas les contraintes");
-        repairAloneCustomers(permutations, solver);
 
-        return new Solution(null, permutations);
+        //Suppression des routes restantes si le client est seul dans la tournée
+        repairSolutionAloneCustomers(routes, solver);
+
+        //Réparation de la solution si elle utilise plus de camions que disponible
+        repairSolutionExceedingVehiclesNumber(routes, solver);
+
+        return new Solution(new ArrayList<>(), routes);
     }
 
     /**
-     * Fonction qui calcule la liste des savings pour l'instance du problème
+     * Fonction de création de la solution initiale pour l'algorithme de CK.
      *
-     * @param satellites liste des satellites
-     * @param customers liste des clients
+     * @param instance L'instance du problème
+     * @return un ensemble de route où une route est créé pour chaque client
+     * vers chaque satellite
+     */
+    public List<List<Assignment>> createInitialSolution(Instance instance) {
+        List<Satellite> satellites = instance.getSatellites();
+        List<Customer> customers = instance.getCustomers();
+        List<List<Assignment>> routes = new ArrayList<>(satellites.size() * customers.size());
+        for (Satellite s : satellites) {
+            for (Customer c : customers) {
+                List<Assignment> route = new ArrayList<>(2);
+                route.add(new Assignment(c, s));
+                route.add(new Assignment(c));
+                routes.add(route);
+            }
+        }
+        return routes;
+    }
+
+    /**
+     * Fonction qui calcule la liste des savings pour l'instance du problème.
+     *
+     * @param instance L'instance du problème
      * @return liste des savings triée dans l'ordre décroisant
      */
-    public ArrayList<Saving> computeSavings(List<Satellite> satellites, List<Customer> customers) {
-        ArrayList<Saving> savings = new ArrayList<>();
-        //on crée les savings pour chaques paires de clients i,j et pour chacun des satellites
-        for (Satellite sI : satellites) {
-            for (Satellite sJ : satellites) {
-                for (Customer i : customers) {
-                    for (Customer j : customers) {
-                        if (!i.equals(j)) {
-                            Saving saving = new Saving(sI, sJ, i, j);
-                            savings.add(saving);
+    public List<Saving> computeSavings(Instance instance) {
+        List<Satellite> satellites = instance.getSatellites();
+        List<Customer> customers = instance.getCustomers();
+        List<Saving> savings = new ArrayList<>(satellites.size()*satellites.size()*customers.size()*customers.size()-satellites.size()*satellites.size()*customers.size());
+
+        //on crée les savings pour chaques paires satellites i et j et de clients k et l
+        for (int i = 0; i < satellites.size(); i++) {
+            for (int j = 0; j < satellites.size(); j++) {
+                for (int k = 0; k < customers.size(); k++) {
+                    for (int l = k +1; l < customers.size(); l++) {
+                        double savingValue;
+                        if (satellites.get(i).equals(satellites.get(j))) {
+                            savingValue = instance.getDistance(satellites.get(i), customers.get(k)) + instance.getDistance(satellites.get(i), customers.get(l)) - instance.getDistance(customers.get(k), customers.get(l));
+                        } else {
+                            savingValue = instance.getDistance(satellites.get(i), customers.get(k)) + instance.getDistance(satellites.get(j), customers.get(l)) - instance.getDistance(customers.get(k), satellites.get(j)) - instance.getDistance(customers.get(l), satellites.get(i));
                         }
+                        savings.add(new Saving(satellites.get(i), satellites.get(j), customers.get(k), customers.get(l), savingValue));
+                        savings.add(new Saving(satellites.get(i), satellites.get(j), customers.get(l), customers.get(k), savingValue));
                     }
                 }
             }
@@ -79,181 +100,48 @@ public class ClarkeWright implements Heuristic {
 
     /**
      * Traite un saving en essayant de fusionner les routes concernées selon la
-     * méthode classique de Clark & Wright et utilisant un rechargement vers le
-     * satellite
+     * méthode classique de CK ou en utilisant un rechargement vers le satellite.
      *
      * @param saving le saving considéré
-     * @param permutations la liste des permutations
+     * @param routes la liste des routes
      * @param solver le solveur contenant l'instance du problème
      */
-    public void savingsTreatment(Saving saving, List<ArrayList<Assignment>> permutations, Solver solver) {
-        ArrayList<Assignment> iRoute = findRouteLast(saving.sI, saving.i, permutations);
-        ArrayList<Assignment> jRoute = findRouteFirst(saving.sJ, saving.j, permutations);
-        boolean isRouteMerged = false;
+    public void savingsTreatment(Saving saving, List<List<Assignment>> routes, Solver solver) {
+        List<Assignment> iRoute = findRouteLast(saving.getiSatellite(), saving.getiCustomer(), routes);
+        List<Assignment> jRoute = findRouteFirst(saving.getjSatellite(), saving.getjCustomer(), routes);
         if (!iRoute.equals(jRoute) && !iRoute.isEmpty() && !jRoute.isEmpty()) {
-            System.out.println("Fusion considérée : " + iRoute + " + " + jRoute);
-
-            System.out.println("Fusion classique C&W : ");
-            isRouteMerged = mergeRouteClassic(iRoute, jRoute, permutations, solver);
-
-            if (!isRouteMerged) {
-                System.out.println("\nFusion avec rechargement satellite : ");
-                isRouteMerged = mergeRouteWithRefill(iRoute, jRoute, permutations, solver);
+            if (saving.getiSatellite().equals(saving.getjSatellite())) {
+                mergeRouteClassic(saving, iRoute, jRoute, routes, solver);
+            } else {
+                mergeRouteWithRefill(iRoute, jRoute, routes, solver);
             }
         }
     }
 
     /**
-     * Fonction appelée en fin d'algorithme chargée de réaffecter les clients
-     * qui n'ont pas été integrée dans des routes complètes Ces clients ont
-     * gardé les affectations de la solution initiale et ne sont donc affectés à
-     * aucun satellite
+     * Fonction de recherche de la route de la solution où le client c est en
+     * première position. <br>
+     * Cette fonction compare la première route de la solution
+     * avec un client c et retourne la route où c est en première position si
+     * elle existe.
      *
-     * @param permutations liste des permutations
-     * @param solver le solveur contenant l'instance du problème
+     * @param s le satellite où c est affecté
+     * @param c le client à chercher
+     * @param routes l'ensemble des routes
+     * @return la route ou c est en première position, un tableau vide sinon
      */
-    public void repairAloneCustomers(List<ArrayList<Assignment>> permutations, Solver solver) {
-        System.out.println(permutations);
-        ArrayList<Customer> aloneCustomers = new ArrayList<>();
-        //Extraction des clients seuls
-        for (ArrayList<Assignment> route : permutations) {
-            if (route.size() == 2) {
-                Customer c = route.get(0).getCustomer();
-                if (!aloneCustomers.contains(c)) {
-                    aloneCustomers.add(c);
-                }
-            }
-        }
-        //On retire les routes où les clients sont seuls
-        permutations.removeIf(route -> route.size() == 2);
-        //On cherche le satellite le plus proche des clients seuls et on réinsère les clients dans la solution
-        for (Customer c : aloneCustomers) {
-            Satellite closestSatellite = solver.getInstance().getSatellites().get(0);
-            for (Satellite s : solver.getInstance().getSatellites()) {
-                if (s.computeDistance(c) < closestSatellite.computeDistance(c)) {
-                    closestSatellite = s;
-                }
-            }
-            ArrayList<Assignment> permutation = new ArrayList<>();
-            permutation.add(new Assignment(c, closestSatellite));
-            permutation.add(new Assignment(c));
-            permutations.add(permutation);
-        }
-    }
-
-    /**
-     * Fusion classique de l'algorithme de Clarke & Wright avec respect des
-     * contraintes capacités et fenêtre de temps
-     *
-     * @param iRoute la route i a fusionner
-     * @param jRoute la route j à fusionner
-     * @param permutations la liste des permutations
-     * @param solver le solveur contenant l'instance du problème
-     * @return booléen indiquant si les routes ont été fusionnée
-     */
-    public boolean mergeRouteClassic(ArrayList<Assignment> iRoute, ArrayList<Assignment> jRoute, List<ArrayList<Assignment>> permutations, Solver solver) {
-        boolean isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(iRoute);
-        boolean isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(iRoute);
-        System.out.println("Contraintes temporelles respectées route i : " + isTimeDoable);
-        System.out.println("Contraintes capacités respectées route i : " + isCapacityDoable);
-
-        isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(jRoute);
-        isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(jRoute);
-        System.out.println("Contraintes temporelles respectées route j : " + isTimeDoable);
-        System.out.println("Contraintes capacités respectées route j : " + isCapacityDoable);
-
-        ArrayList<Assignment> mergedRoute = new ArrayList<>();
-        for (Assignment a : iRoute) {
-            if (a.getSatellite() != null) {
-                mergedRoute.add(a);
-            }
-        }
-        mergedRoute.addAll(jRoute);
-        for (Assignment a : iRoute) {
-            if (a.getSatellite() == null) {
-                mergedRoute.add(a);
-            }
-        }
-
-        System.out.println("Route fusionnée : " + mergedRoute);
-        isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(mergedRoute);
-        isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(mergedRoute);
-        System.out.println("Contraintes temporelles respectées : " + isTimeDoable);
-        System.out.println("Contraintes capacités respectées : " + isCapacityDoable);
-        if (isTimeDoable && isCapacityDoable) {
-            //suppresion route i
-            permutations.remove(iRoute);
-            //suppresion route j
-            permutations.remove(jRoute);
-            //suppresion de toutes les routes qui contiennent i et j et un satellite différent de celui affectée
-            permutations.removeIf(route -> !route.get(0).getSatellite().equals(iRoute.get(0)) && route.get(0).getCustomer().equals(iRoute.get(0).getCustomer()));
-            permutations.removeIf(route -> !route.get(0).getSatellite().equals(jRoute.get(0)) && route.get(0).getCustomer().equals(jRoute.get(0).getCustomer()));
-            //ajout de la route fusionnée
-            permutations.add(mergedRoute);
-
-            System.out.println("Nouvelle solution : " + permutations);
-        }
-        return isTimeDoable && isCapacityDoable;
-    }
-
-    /**
-     *
-     * @param iRoute
-     * @param jRoute
-     * @param permutations
-     * @param solver
-     */
-    public boolean mergeRouteWithRefill(ArrayList<Assignment> iRoute, ArrayList<Assignment> jRoute, List<ArrayList<Assignment>> permutations, Solver solver) {
-        boolean isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(iRoute);
-        boolean isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(iRoute);
-        System.out.println("Contraintes temporelles respectées route i : " + isTimeDoable);
-        System.out.println("Contraintes capacités respectées route i : " + isCapacityDoable);
-
-        isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(jRoute);
-        isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(jRoute);
-        System.out.println("Contraintes temporelles respectées route j : " + isTimeDoable);
-        System.out.println("Contraintes capacités respectées route j : " + isCapacityDoable);
-
-        ArrayList<Assignment> mergedRoute = new ArrayList<>();
-        mergedRoute.addAll(iRoute);
-        mergedRoute.addAll(jRoute);
-        System.out.println("Route fusionnée : " + mergedRoute);
-        isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(mergedRoute);
-        isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(mergedRoute);
-        System.out.println("Contraintes temporelles respectées : " + isTimeDoable);
-        System.out.println("Contraintes capacités respectées : " + isCapacityDoable);
-        if (isTimeDoable && isCapacityDoable) {
-            //suppresion route i
-            permutations.remove(iRoute);
-            //suppresion route j
-            permutations.remove(jRoute);
-            //suppresion de toutes les routes qui contiennent i et j et un satellite différent de celui affectée
-            permutations.removeIf(route -> !route.get(0).getSatellite().equals(iRoute.get(0)) && route.get(0).getCustomer().equals(iRoute.get(0).getCustomer()));
-            permutations.removeIf(route -> !route.get(0).getSatellite().equals(jRoute.get(0)) && route.get(0).getCustomer().equals(jRoute.get(0).getCustomer()));
-            //ajout de la route fusionnée
-            permutations.add(mergedRoute);
-            System.out.println("Nouvelle solution : " + permutations);
-        }
-        return isTimeDoable && isCapacityDoable;
-    }
-
-    /**
-     *
-     * @param s
-     * @param c
-     * @param permutations
-     * @return
-     */
-    public ArrayList<Assignment> findRouteFirst(Satellite s, Customer c, List<ArrayList<Assignment>> permutations) {
-        Iterator<ArrayList<Assignment>> routeIt = permutations.iterator();
-        while (routeIt.hasNext()) {
-            ArrayList<Assignment> route = routeIt.next();
+    public List<Assignment> findRouteFirst(Satellite s, Customer c, List<List<Assignment>> routes) {
+        //pour chaque route on récupère la première assignation sans client
+        for (List<Assignment> route : routes) {
             Iterator<Assignment> assignmentIt = route.iterator();
             boolean found = true;
+            //pour chaque element de la route
             while (assignmentIt.hasNext() && found) {
                 Assignment assignment = assignmentIt.next();
-                if (assignment.getSatellite() == null) {
-                    found = route.get(0).getSatellite().equals(s) && assignment.getCustomer().equals(c);
+                //on passe toutes les affectations et on compare le premier client de la route
+                if (assignment.getSatellite().isEmpty()) {
+                    //si on ne trouve pas on passera à la route suivante
+                    found = assignment.getCustomer().equals(c) && route.contains(new Assignment(c, s));
                     if (found) {
                         return route;
                     }
@@ -264,17 +152,21 @@ public class ClarkeWright implements Heuristic {
     }
 
     /**
+     * Fonction de recherche de la route de la solution où le client c est en
+     * dernière solution. <br>
+     * Cette fonction compare la dernière route de la solution
+     * avec un client c et retourne la route où c est en dernière position si
+     * elle existe.
      *
-     * @param s
-     * @param c
-     * @param permutations
-     * @return
+     * @param s le satellite où c est affecté
+     * @param c le client à chercher
+     * @param routes l'ensemble des routes
+     * @return la route ou c est en dernière position, un tableau vide sinon
      */
-    public ArrayList<Assignment> findRouteLast(Satellite s, Customer c, List<ArrayList<Assignment>> permutations) {
-        Iterator<ArrayList<Assignment>> routeIt = permutations.iterator();
-        while (routeIt.hasNext()) {
-            ArrayList<Assignment> route = routeIt.next();
-            boolean sInRoute = route.get(0).getSatellite().equals(s);
+    public List<Assignment> findRouteLast(Satellite s, Customer c, List<List<Assignment>> routes) {
+        //pour chaque route on compare le dernier element avec c
+        for (List<Assignment> route : routes) {
+            boolean sInRoute = route.lastIndexOf(new Assignment(c, s)) >= 0;
             boolean cInRoute = route.get(route.size() - 1).getCustomer().equals(c);
             if (sInRoute && cInRoute) {
                 return route;
@@ -284,48 +176,183 @@ public class ClarkeWright implements Heuristic {
     }
 
     /**
-     * Classe imbriqué utilisée pour gérer les savings On veut conserver les
-     * informations des clients et du satellites impliqués dans la calcul du
-     * savings
+     * Fusion classique de l'algorithme de CK avec respect des
+     * contraintes capacités et fenêtre de temps.
+     *
+     * @param saving le saving considéré
+     * @param iRoute la route i a fusionner
+     * @param jRoute la route j à fusionner
+     * @param routes la liste des routes
+     * @param solver le solveur contenant l'instance du problème
      */
-    public class Saving implements Comparable {
-
-        public Satellite sI;
-        public Satellite sJ;
-        public Customer i;
-        public Customer j;
-        public double saving;
-
-        public Saving(Satellite sI, Satellite sJ, Customer i, Customer j) {
-            this.sI = sI;
-            this.sJ = sJ;
-            this.i = i;
-            this.j = j;
-            if (sI.equals(sJ)) {
-                this.saving = sI.computeDistance(i) + sI.computeDistance(j) - i.computeDistance(j);
+    public void mergeRouteClassic(Saving saving, List<Assignment> iRoute, List<Assignment> jRoute, List<List<Assignment>> routes, Solver solver) {
+        List<Assignment> mergedRoute = new ArrayList<>();
+        //On merge toute la route i
+        mergedRoute.addAll(iRoute);
+        //index de l'affectation du client i à sI dans la route i
+        int k = iRoute.lastIndexOf(new Assignment(saving.getiCustomer(), saving.getiSatellite()));
+        // on ajoute les affectations des clients vers le satellite sI de la route j à partir de l'indice k
+        for (Assignment a : jRoute) {
+            if (a.getSatellite().isPresent()) {
+                mergedRoute.add(k, a);
+                k++;
             } else {
-                this.saving = sI.computeDistance(i) + sJ.computeDistance(j) - i.computeDistance(sJ) - j.computeDistance(sI);
+                break;
             }
         }
-
-        @Override
-        public String toString() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("savings  =(");
-            sb.append("satellite sI : ").append(sI.toString());
-            sb.append(" satellite sJ : ").append(sJ.toString());
-            sb.append(" customer i : ").append(i.toString());
-            sb.append(" customer j : ").append(j.toString());
-            sb.append(" Saving value : ").append(saving);
-            sb.append(")");
-            return sb.toString();
+        // le reste de la route j est ajoutée à la fin de la séquence
+        for (int i = mergedRoute.size() - iRoute.size(); i < jRoute.size(); i++) {
+            mergedRoute.add(jRoute.get(i));
         }
+        boolean isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(mergedRoute);
+        boolean isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(mergedRoute);
+        if (isTimeDoable && isCapacityDoable) {
+            //suppresion route i
+            routes.remove(iRoute);
+            //suppresion route j
+            routes.remove(jRoute);
+            //suppresion de toutes les routes qui contiennent i et j et un satellite différent de celui affectée
+            routes.removeIf(route -> !route.get(0).getSatellite().get().equals(iRoute.get(0).getSatellite().get()) && route.get(0).getCustomer().equals(iRoute.get(0).getCustomer()));
+            routes.removeIf(route -> !route.get(0).getSatellite().get().equals(jRoute.get(0).getSatellite().get()) && route.get(0).getCustomer().equals(jRoute.get(0).getCustomer()));
+            //ajout de la route fusionnée
+            routes.add(mergedRoute);
+        }
+    }
 
-        @Override
-        public int compareTo(Object o) {
-            Saving saving = (Saving) o;
-            //comparaison
-            return Double.compare(this.saving, saving.saving);
+    /**
+     * Fusion autorisant un rechargment au satellite avec respect des
+     * contraintes capacités et fenêtre de temps.
+     *
+     * @param iRoute la route i a fusionner
+     * @param jRoute la route j à fusionner
+     * @param routes la liste des routes
+     * @param solver le solveur contenant l'instance du problème
+     */
+    public void mergeRouteWithRefill(List<Assignment> iRoute, List<Assignment> jRoute, List<List<Assignment>> routes, Solver solver) {
+        List<Assignment> mergedRoute = new ArrayList<>();
+        mergedRoute.addAll(iRoute);
+        mergedRoute.addAll(jRoute);
+        boolean isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(mergedRoute);
+        boolean isCapacityDoable = solver.isSecondEchelonPermutationCapacitiesRespected(mergedRoute);
+        if (isTimeDoable && isCapacityDoable) {
+            //suppresion route i
+            routes.remove(iRoute);
+            //suppresion route j
+            routes.remove(jRoute);
+            //suppresion de toutes les routes qui contiennent i et j et un satellite différent de celui affectée
+            routes.removeIf(route -> !route.get(0).getSatellite().get().equals(iRoute.get(0).getSatellite().get()) && route.get(0).getCustomer().equals(iRoute.get(0).getCustomer()));
+            routes.removeIf(route -> !route.get(0).getSatellite().get().equals(jRoute.get(0).getSatellite().get()) && route.get(0).getCustomer().equals(jRoute.get(0).getCustomer()));
+            //ajout de la route fusionnée
+            routes.add(mergedRoute);
+        }
+    }
+
+    /**
+     * Fonction appelée en fin d'algorithme chargée de réduire le nombre de
+     * véhicules utilisés si celui-ci excède le nombre autorisé par l'instance. <br>
+     * Si à la fin de l'algorithme la solution renvoyée possède n véhicules, 
+     * que l'instance en autorise k alors on conserve les k 
+     * plus grandes tournées et on réinsère les clients
+     * des n-k tournées à n'importe quelle position possible dans la solution.
+     *
+     * @param routes liste des routes
+     * @param solver le solveur contenant l'instance du problème
+     */
+    public void repairSolutionExceedingVehiclesNumber(List<List<Assignment>> routes, Solver solver) {
+        int exceedNumber = routes.size() - solver.getInstance().getSecondEchelonFleet().getVehiclesNumber();
+        if (exceedNumber > 0) {
+            //liste contenant les clients à réaffecter 
+            List<Assignment> exceedingClients = new ArrayList<>(exceedNumber);
+            //liste contenant les affectations des clients vers leur satellites
+            List<Assignment> exceedingClientsAssignment = new ArrayList<>(exceedNumber);
+            //tri des routes dans l'ordre décroisant de leur taille
+            Collections.sort(routes, (List a1, List a2) -> a1.size() - a2.size());
+            //Extraction des k plus petites routes en surplus
+            for (int k = 0; k < exceedNumber; k++) {
+                for (Assignment assign : routes.get(k)) {
+                    if (assign.getSatellite().isEmpty()) {
+                        exceedingClients.add(assign);
+                    } else {
+                        exceedingClientsAssignment.add(assign);
+                    }
+                }
+            }
+            //On retire les k plus petites routes de la solution
+            routes.subList(0, exceedNumber).clear();
+            //On trie les clients et leur affectations pour acceder aux elements avec le même indice
+            Collections.sort(exceedingClients, (Assignment a1, Assignment a2) -> Integer.compare(a1.getCustomer().getGlobalSiteID(), a2.getCustomer().getGlobalSiteID()));
+            Collections.sort(exceedingClientsAssignment, (Assignment a1, Assignment a2) -> Integer.compare(a1.getCustomer().getGlobalSiteID(), a2.getCustomer().getGlobalSiteID()));
+
+            for (int i = 0; i < exceedingClients.size(); i++) {
+                int j = 0;
+                boolean inserted = false;
+                while (j < routes.size() && !inserted) {
+                    int k = 1;
+                    List<Assignment> route = routes.get(j);
+                    while (k < route.size() && !inserted) {
+                        if (route.get(k).getSatellite().isEmpty()) {
+                            route.add(k, exceedingClients.get(i));
+                            //On cherche la première position où on peut insérer une affectation
+                            int assignmentIndex = k;
+                            while (route.get(assignmentIndex).getSatellite().isEmpty()) {
+                                assignmentIndex--;
+                            }
+                            route.add(assignmentIndex + 1, exceedingClientsAssignment.get(i));
+                            //insertion réussie, on passe au prochain site
+                            if (solver.isSecondEchelonPermutationCapacitiesRespected(route) && solver.isSecondEchelonPermutationTimeWindowsRespected(route)) {
+                                inserted = true;
+                            } //insertion échouée, on retire l'insertion et on passe à la prochaine position
+                            else {
+                                Customer c = exceedingClients.get(i).getCustomer();
+                                route.removeIf(assign -> assign.getCustomer().equals(c));
+                            }
+                        }
+                        k++;
+                    }
+                    j++;
+                }
+            }
+        }
+    }
+
+    /**
+     * Fonction appelée en fin d'algorithme chargée de réaffecter les clients
+     * qui n'ont pas été integrée dans des routes complètes. <br>
+     * Ces clients ont gardé les affectations de la solution initiale et 
+     * ne sont donc affectés à aucun satellite. <br>
+     * On les réinsère en utilisant le satellite le plus proche
+     * d'eux et on les réinsère dans la solution.
+     *
+     * @param routes liste des routes
+     * @param solver le solveur contenant l'instance du problème
+     */
+    public void repairSolutionAloneCustomers(List<List<Assignment>> routes, Solver solver) {
+        List<Customer> aloneCustomers = new ArrayList<>();
+        //Extraction des clients seuls
+        for (List<Assignment> route : routes) {
+            if (route.size() == 2) {
+                Customer c = route.get(0).getCustomer();
+                if (!aloneCustomers.contains(c)) {
+                    aloneCustomers.add(c);
+                }
+            }
+        }
+        if (aloneCustomers.isEmpty()) {
+            //On retire les routes où les clients sont seuls
+            routes.removeIf(route -> route.size() == 2);
+            //On cherche le satellite le plus proche des clients seuls et on réinsère les clients dans la solution
+            for (Customer c : aloneCustomers) {
+                Satellite closestSatellite = solver.getInstance().getSatellites().get(0);
+                for (Satellite s : solver.getInstance().getSatellites()) {
+                    if (solver.getInstance().getDistance(s, c) < solver.getInstance().getDistance(closestSatellite, c)) {
+                        closestSatellite = s;
+                    }
+                }
+                List<Assignment> route = new ArrayList<>();
+                route.add(new Assignment(c, closestSatellite));
+                route.add(new Assignment(c));
+                routes.add(route);
+            }
         }
     }
 }

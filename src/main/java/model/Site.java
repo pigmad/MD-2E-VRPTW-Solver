@@ -5,13 +5,14 @@ import static java.lang.Math.sqrt;
 
 /**
  * Classe abstraite représentant toutes les entités sommets (les sites) du
- * problème (dépot, satellite ou client) Permet de mutualiser des opérations
- * entre les sommets, comme le calcul de la distance euclienne entre deux points
+ * problème (dépot, satellite ou client). <br>
+ * Permet de mutualiser des opérations entre les sommets, 
+ * comme le calcul de la distance euclienne entre deux points.
  *
  * @author LASTENNET Dorian
  */
 public abstract class Site {
-
+    
     private final int siteID; //identifiant du site parmi les sites de mêmes types
     private final int globalSiteID; //identifiant du site parmi tous les sites
     private final int xCoordinate; //coordonnée en x
@@ -27,10 +28,9 @@ public abstract class Site {
     }
 
     /**
-     * Calcule la distance euclidenne entre deux sommets
+     * Calcule la distance euclidenne entre deux sommets.
      *
-     * @param site une implémentation de la classe Site pour le calcul de la
-     * distance
+     * @param site une implémentation de la classe Site 
      * @return double : la distance euclidienne entre les deux sommets
      */
     public final double computeDistance(Site site) {
@@ -38,6 +38,7 @@ public abstract class Site {
     }
 
     //Accesseurs
+    
     public int getSiteID() {
         return siteID;
     }
@@ -58,7 +59,11 @@ public abstract class Site {
         return serviceTime;
     }
 
-    //Surchage
+    /**
+     * Surchage opérateur d'égalité.
+     * @param o objet à comparer
+     * @return booléen indiquant si les objets sont identiques
+     */
     @Override
     public boolean equals(Object o) {
 
