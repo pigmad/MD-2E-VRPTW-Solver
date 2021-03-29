@@ -327,7 +327,7 @@ public class Solver {
         boolean isDoable = true;
         int routeSize = route.size();
         double currentTime = 0.0;
-        double penalty = 0.0;
+        double earlyPenalty = 0.0;
         int iAssignment = 0;
         while (isDoable && iAssignment < routeSize - 1) {
             boolean isTimeWindowRespected = true;
@@ -344,7 +344,7 @@ public class Solver {
                     //arrivée au plus tôt du camion au client
                     double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentCustomer, nextCustomer));
                     //on ajoute une pénalité si le véhicule est en avance
-                    penalty += startServiceTime == nextCustomer.getTimeWindowStart() ? penalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
+                    earlyPenalty += startServiceTime == nextCustomer.getTimeWindowStart() ? earlyPenalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
                     isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
                 } //trajet client->satellite
@@ -361,7 +361,7 @@ public class Solver {
                     //arrivée au plus tôt du camion au client
                     double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentSatellite.get(), nextCustomer));
                     //on ajoute une pénalité si le véhicule est en avance
-                    penalty += startServiceTime == nextCustomer.getTimeWindowStart() ? penalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
+                    earlyPenalty += startServiceTime == nextCustomer.getTimeWindowStart() ? earlyPenalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
                     //on vérifie la contrainte
                     isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
@@ -373,7 +373,7 @@ public class Solver {
             isDoable = isTimeWindowRespected;
             iAssignment++;
         }
-        if(!allowWaitingTime){isDoable = penalty==0.0;}
+        if(!allowWaitingTime){isDoable = earlyPenalty==0.0;}
         return isDoable;
     }
 
