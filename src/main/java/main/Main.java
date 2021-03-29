@@ -3,7 +3,8 @@ package main;
 import model.Instance;
 import model.Solution;
 import solver.Solver;
-import solver.ClarkeWright;
+import solver.ClarkeWrightFirst;
+import solver.ClarkeWrightSecond;
 import utils.FileManager;
 import utils.FileManagerException;
 
@@ -24,7 +25,7 @@ public class Main {
      * Programme principal. <br>
      * Projet console.
      * 
-     * @param args 
+     * @param args paramètres de la ligne de commandes (non utilisé)
      */
     public static void main(String[] args)  {
         JFileChooser fileChooser = new JFileChooser();
@@ -53,13 +54,18 @@ public class Main {
                     
                     //instantiation d'un solveur
                     Solver solver = new Solver(instance, true);
-                    ClarkeWright ck = new ClarkeWright(solver);
-                    
+                    //heuristique résolution second échelon
+                    ClarkeWrightSecond secondCK = new ClarkeWrightSecond(solver);
+                    //heuristique résolution premier échelon
+                    ClarkeWrightFirst firstCK = new ClarkeWrightFirst(solver);
                     
                     //timer d'exécution
                     long startTime = System.nanoTime();
-                    //récuperation de la solution
-                    solver.solveInstance(ck);
+                    //résolution du second échelon
+                    solver.solveInstance(secondCK);
+                    //on affecte les demandes aux satellites
+                    solver.setSolutionSatellitesDemand();
+                    solver.solveInstance(firstCK);
                     Solution solution = solver.getSolution();
                     System.out.println(solution);
                     //fin timer

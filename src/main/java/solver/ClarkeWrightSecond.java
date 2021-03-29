@@ -1,6 +1,6 @@
 package solver;
 
-import model.Assignment;
+import model.AssignmentSecond;
 import model.Customer;
 import model.Satellite;
 import model.Solution;
@@ -12,17 +12,18 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implémentation de l'algorithme de CW adapté au problème. <br>
+ * Implémentation de l'algorithme de CW adapté au problème pour la résolution du second niveau. <br>
  * On considère deux types de fusion pour des clients i et j: <br>
- * soit les satellites de routes à fusionner sont identiques alors on conserve la fusion classique <br>
- * soit ils sont différents et on obtient satI,i,Sj,j,Si.
+ * soit les satellites de routes à fusionner sont identiques alors on conserve la fusion classique : satI,i,j,SatI <br>
+ * soit ils sont différents et on obtient : satI,i,satJ,j,satI.
  *
  * @author LASTENNET Dorian
  */
-public class ClarkeWright implements Heuristic {
+public class ClarkeWrightSecond implements Heuristic {
+
     private Solver solver;
-    
-    public ClarkeWright(Solver solver){
+
+    public ClarkeWrightSecond(Solver solver) {
         this.solver = solver;
     }
 
@@ -32,7 +33,7 @@ public class ClarkeWright implements Heuristic {
         List<Saving> savingsList = computeSavings(solver.getInstance());
 
         //création de la solution initiale où tous les clients sont reliés chacun des satellites par un véhicule
-        List<List<Assignment>> routes = createInitialSolution(solver.getInstance());
+        List<List<AssignmentSecond>> routes = createInitialSolution(solver.getInstance());
 
         for (Saving saving : savingsList) {
             //Traitement du savings
@@ -52,18 +53,18 @@ public class ClarkeWright implements Heuristic {
      * Fonction de création de la solution initiale pour l'algorithme de CK.
      *
      * @param instance L'instance du problème
-     * @return un ensemble de route où une route est créé pour chaque client
+     * @return un ensemble de routes où une route est créé pour chaque client
      * vers chaque satellite
      */
-    public List<List<Assignment>> createInitialSolution(Instance instance) {
+    public List<List<AssignmentSecond>> createInitialSolution(Instance instance) {
         List<Satellite> satellites = instance.getSatellites();
         List<Customer> customers = instance.getCustomers();
-        List<List<Assignment>> routes = new ArrayList<>(satellites.size() * customers.size());
+        List<List<AssignmentSecond>> routes = new ArrayList<>(satellites.size() * customers.size());
         for (Satellite s : satellites) {
             for (Customer c : customers) {
-                List<Assignment> route = new ArrayList<>(2);
-                route.add(new Assignment(c, s));
-                route.add(new Assignment(c));
+                List<AssignmentSecond> route = new ArrayList<>(2);
+                route.add(new AssignmentSecond(c, s));
+                route.add(new AssignmentSecond(c));
                 routes.add(route);
             }
         }
@@ -79,7 +80,7 @@ public class ClarkeWright implements Heuristic {
     public List<Saving> computeSavings(Instance instance) {
         List<Satellite> satellites = instance.getSatellites();
         List<Customer> customers = instance.getCustomers();
-        List<Saving> savings = new ArrayList<>(satellites.size()*satellites.size()*customers.size()*customers.size()-satellites.size()*satellites.size()*customers.size());
+        List<Saving> savings = new ArrayList<>(satellites.size() * satellites.size() * customers.size() * customers.size() - satellites.size() * satellites.size() * customers.size());
 
         //on crée les savings pour chaques paires satellites i et j et de clients k et l
         for (int i = 0; i < satellites.size(); i++) {
@@ -105,15 +106,16 @@ public class ClarkeWright implements Heuristic {
 
     /**
      * Traite un saving en essayant de fusionner les routes concernées selon la
-     * méthode classique de CK ou en utilisant un rechargement vers le satellite.
+     * méthode classique de CK ou en utilisant un rechargement vers le
+     * satellite.
      *
      * @param saving le saving considéré
      * @param routes la liste des routes
      * @param solver le solveur contenant l'instance du problème
      */
-    public void savingsTreatment(Saving saving, List<List<Assignment>> routes, Solver solver) {
-        List<Assignment> iRoute = findRouteLast(saving.getiSatellite(), saving.getiCustomer(), routes);
-        List<Assignment> jRoute = findRouteFirst(saving.getjSatellite(), saving.getjCustomer(), routes);
+    public void savingsTreatment(Saving saving, List<List<AssignmentSecond>> routes, Solver solver) {
+        List<AssignmentSecond> iRoute = findRouteLast(saving.getiSatellite(), saving.getiCustomer(), routes);
+        List<AssignmentSecond> jRoute = findRouteFirst(saving.getjSatellite(), saving.getjCustomer(), routes);
         if (!iRoute.equals(jRoute) && !iRoute.isEmpty() && !jRoute.isEmpty()) {
             if (saving.getiSatellite().equals(saving.getjSatellite())) {
                 mergeRouteClassic(saving, iRoute, jRoute, routes, solver);
@@ -126,20 +128,19 @@ public class ClarkeWright implements Heuristic {
     /**
      * Fonction de recherche de la route de la solution où le client c est en
      * première position. <br>
-     * Cette fonction compare la première route de la solution
-     * avec un client c et retourne la route où c est en première position si
-     * elle existe.
+     * Cette fonction compare la première route de la solution avec un client c
+     * et retourne la route où c est en première position si elle existe.
      *
      * @param s le satellite où c est affecté
      * @param c le client à chercher
      * @param routes l'ensemble des routes
      * @return la route ou c est en première position, un tableau vide sinon
      */
-    public List<Assignment> findRouteFirst(Satellite s, Customer c, List<List<Assignment>> routes) {
+    public List<AssignmentSecond> findRouteFirst(Satellite s, Customer c, List<List<AssignmentSecond>> routes) {
         //pour chaque route on compare le premier element avec c et s
-        for (List<Assignment> route : routes) {
+        for (List<AssignmentSecond> route : routes) {
             Optional<Satellite> assignSat = route.get(0).getSatellite();
-            if(assignSat.isPresent()){
+            if (assignSat.isPresent()) {
                 if (route.get(0).getCustomer().equals(c) && assignSat.get().equals(s)) {
                     return route;
                 }
@@ -151,32 +152,30 @@ public class ClarkeWright implements Heuristic {
     /**
      * Fonction de recherche de la route de la solution où le client c est en
      * dernière solution. <br>
-     * Cette fonction compare la dernière route de la solution
-     * avec un client c et retourne la route où c est en dernière position si
-     * elle existe.
+     * Cette fonction compare la dernière route de la solution avec un client c
+     * et retourne la route où c est en dernière position si elle existe.
      *
      * @param s le satellite où c est affecté
      * @param c le client à chercher
      * @param routes l'ensemble des routes
      * @return la route ou c est en dernière position, un tableau vide sinon
      */
-    public List<Assignment> findRouteLast(Satellite s, Customer c, List<List<Assignment>> routes) {
+    public List<AssignmentSecond> findRouteLast(Satellite s, Customer c, List<List<AssignmentSecond>> routes) {
         //pour chaque route on compare le dernier element avec c et on cherche si son affectation est a satellite s
-        for (List<Assignment> route : routes) {
+        for (List<AssignmentSecond> route : routes) {
             //on compare le dernier séquencement à c
-            if (route.get(route.size()-1).getCustomer().equals(c)){
+            if (route.get(route.size() - 1).getCustomer().equals(c)) {
                 //on parcours la permutation à l'envers jusqu'à l'affectation de c et on compare 
-                int index = route.size()-2;
+                int index = route.size() - 2;
                 boolean sInRoute = true;
-                while(sInRoute){
-                    Assignment assign = route.get(index);
-                    if(assign.getCustomer().equals(c)){
+                while (sInRoute) {
+                    AssignmentSecond assign = route.get(index);
+                    if (assign.getCustomer().equals(c)) {
                         Optional<Satellite> assignSat = assign.getSatellite();
-                        if(assignSat.isPresent()){
-                            if(assignSat.get().equals(s)){
-                            return route;
-                            }
-                            else{
+                        if (assignSat.isPresent()) {
+                            if (assignSat.get().equals(s)) {
+                                return route;
+                            } else {
                                 sInRoute = false;
                             }
                         }
@@ -189,8 +188,8 @@ public class ClarkeWright implements Heuristic {
     }
 
     /**
-     * Fusion classique de l'algorithme de CK avec respect des
-     * contraintes capacités et fenêtre de temps.
+     * Fusion classique de l'algorithme de CK avec respect des contraintes
+     * capacités et fenêtre de temps.
      *
      * @param saving le saving considéré
      * @param iRoute la route i a fusionner
@@ -198,14 +197,14 @@ public class ClarkeWright implements Heuristic {
      * @param routes la liste des routes
      * @param solver le solveur contenant l'instance du problème
      */
-    public void mergeRouteClassic(Saving saving, List<Assignment> iRoute, List<Assignment> jRoute, List<List<Assignment>> routes, Solver solver) {
-        List<Assignment> mergedRoute = new ArrayList<>();
+    public void mergeRouteClassic(Saving saving, List<AssignmentSecond> iRoute, List<AssignmentSecond> jRoute, List<List<AssignmentSecond>> routes, Solver solver) {
+        List<AssignmentSecond> mergedRoute = new ArrayList<>();
         //On merge toute la route i
         mergedRoute.addAll(iRoute);
         //index de l'affectation du client i à sI dans la route i
-        int k = iRoute.indexOf(new Assignment(saving.getiCustomer(), saving.getiSatellite()))+1;
+        int k = iRoute.indexOf(new AssignmentSecond(saving.getiCustomer(), saving.getiSatellite())) + 1;
         // on ajoute les affectations des clients vers le satellite sI de la route j à partir de l'indice k+1
-        for (Assignment a : jRoute) {
+        for (AssignmentSecond a : jRoute) {
             if (a.getSatellite().isPresent()) {
                 mergedRoute.add(k, a);
                 k++;
@@ -241,8 +240,8 @@ public class ClarkeWright implements Heuristic {
      * @param routes la liste des routes
      * @param solver le solveur contenant l'instance du problème
      */
-    public void mergeRouteWithRefill(List<Assignment> iRoute, List<Assignment> jRoute, List<List<Assignment>> routes, Solver solver) {
-        List<Assignment> mergedRoute = new ArrayList<>();
+    public void mergeRouteWithRefill(List<AssignmentSecond> iRoute, List<AssignmentSecond> jRoute, List<List<AssignmentSecond>> routes, Solver solver) {
+        List<AssignmentSecond> mergedRoute = new ArrayList<>();
         mergedRoute.addAll(iRoute);
         mergedRoute.addAll(jRoute);
         boolean isTimeDoable = solver.isSecondEchelonPermutationTimeWindowsRespected(mergedRoute);
@@ -262,27 +261,28 @@ public class ClarkeWright implements Heuristic {
 
     /**
      * Fonction appelée en fin d'algorithme chargée de réduire le nombre de
-     * véhicules utilisés si celui-ci excède le nombre autorisé par l'instance. <br>
-     * Si à la fin de l'algorithme la solution renvoyée possède n véhicules, 
-     * que l'instance en autorise k alors on conserve les k 
-     * plus grandes tournées et on réinsère les clients
-     * des n-k tournées à n'importe quelle position possible dans la solution.
+     * véhicules utilisés si celui-ci excède le nombre autorisé par l'instance.
+     * <br>
+     * Si à la fin de l'algorithme la solution renvoyée possède n véhicules, que
+     * l'instance en autorise k alors on conserve les k plus grandes tournées et
+     * on réinsère les clients des n-k tournées à n'importe quelle position
+     * possible dans la solution.
      *
      * @param routes liste des routes
      * @param solver le solveur contenant l'instance du problème
      */
-    public void repairSolutionExceedingVehiclesNumber(List<List<Assignment>> routes, Solver solver) {
+    public void repairSolutionExceedingVehiclesNumber(List<List<AssignmentSecond>> routes, Solver solver) {
         int exceedNumber = routes.size() - solver.getInstance().getSecondEchelonFleet().getVehiclesNumber();
         if (exceedNumber > 0) {
             //liste contenant les clients à réaffecter 
-            List<Assignment> exceedingClients = new ArrayList<>(exceedNumber);
+            List<AssignmentSecond> exceedingClients = new ArrayList<>(exceedNumber);
             //liste contenant les affectations des clients vers leur satellites
-            List<Assignment> exceedingClientsAssignment = new ArrayList<>(exceedNumber);
+            List<AssignmentSecond> exceedingClientsAssignment = new ArrayList<>(exceedNumber);
             //tri des routes dans l'ordre décroisant de leur taille
             Collections.sort(routes, (List a1, List a2) -> a1.size() - a2.size());
             //Extraction des k plus petites routes en surplus
             for (int k = 0; k < exceedNumber; k++) {
-                for (Assignment assign : routes.get(k)) {
+                for (AssignmentSecond assign : routes.get(k)) {
                     if (assign.getSatellite().isEmpty()) {
                         exceedingClients.add(assign);
                     } else {
@@ -293,15 +293,15 @@ public class ClarkeWright implements Heuristic {
             //On retire les k plus petites routes de la solution
             routes.subList(0, exceedNumber).clear();
             //On trie les clients et leur affectations pour acceder aux elements avec le même indice
-            Collections.sort(exceedingClients, (Assignment a1, Assignment a2) -> Integer.compare(a1.getCustomer().getGlobalSiteID(), a2.getCustomer().getGlobalSiteID()));
-            Collections.sort(exceedingClientsAssignment, (Assignment a1, Assignment a2) -> Integer.compare(a1.getCustomer().getGlobalSiteID(), a2.getCustomer().getGlobalSiteID()));
+            Collections.sort(exceedingClients, (AssignmentSecond a1, AssignmentSecond a2) -> Integer.compare(a1.getCustomer().getGlobalSiteID(), a2.getCustomer().getGlobalSiteID()));
+            Collections.sort(exceedingClientsAssignment, (AssignmentSecond a1, AssignmentSecond a2) -> Integer.compare(a1.getCustomer().getGlobalSiteID(), a2.getCustomer().getGlobalSiteID()));
 
             for (int i = 0; i < exceedingClients.size(); i++) {
                 int j = 0;
                 boolean inserted = false;
                 while (j < routes.size() && !inserted) {
                     int k = 1;
-                    List<Assignment> route = routes.get(j);
+                    List<AssignmentSecond> route = routes.get(j);
                     while (k < route.size() && !inserted) {
                         if (route.get(k).getSatellite().isEmpty()) {
                             route.add(k, exceedingClients.get(i));
@@ -331,18 +331,18 @@ public class ClarkeWright implements Heuristic {
     /**
      * Fonction appelée en fin d'algorithme chargée de réaffecter les clients
      * qui n'ont pas été integrée dans des routes complètes. <br>
-     * Ces clients ont gardé les affectations de la solution initiale et 
-     * ne sont donc affectés à aucun satellite. <br>
-     * On les réinsère en utilisant le satellite le plus proche
-     * d'eux et on les réinsère dans la solution.
+     * Ces clients ont gardé les affectations de la solution initiale et ne sont
+     * donc affectés à aucun satellite. <br>
+     * On les réinsère en utilisant le satellite le plus proche d'eux et on les
+     * réinsère dans la solution.
      *
      * @param routes liste des routes
      * @param solver le solveur contenant l'instance du problème
      */
-    public void repairSolutionAloneCustomers(List<List<Assignment>> routes, Solver solver) {
+    public void repairSolutionAloneCustomers(List<List<AssignmentSecond>> routes, Solver solver) {
         List<Customer> aloneCustomers = new ArrayList<>();
         //Extraction des clients seuls
-        for (List<Assignment> route : routes) {
+        for (List<AssignmentSecond> route : routes) {
             if (route.size() == 2) {
                 Customer c = route.get(0).getCustomer();
                 if (!aloneCustomers.contains(c)) {
@@ -361,11 +361,88 @@ public class ClarkeWright implements Heuristic {
                         closestSatellite = s;
                     }
                 }
-                List<Assignment> route = new ArrayList<>();
-                route.add(new Assignment(c, closestSatellite));
-                route.add(new Assignment(c));
+                List<AssignmentSecond> route = new ArrayList<>();
+                route.add(new AssignmentSecond(c, closestSatellite));
+                route.add(new AssignmentSecond(c));
                 routes.add(route);
             }
         }
     }
+
+    /**
+     * Classe imbriquée pour la gestion les savings. <br>
+     * On veut conserver les informations des clients et des satellites
+     * impliqués dans la calcul du savings.
+     *
+     * @author LASTENNET Dorian
+     */
+    public class Saving implements Comparable {
+
+        private final Satellite iSatellite;
+        private final Satellite jSatellite;
+        private final Customer iCustomer;
+        private final Customer jCustomer;
+        private final double savingValue;
+
+        public Saving(Satellite sI, Satellite sJ, Customer i, Customer j, double saving) {
+            this.iSatellite = sI;
+            this.jSatellite = sJ;
+            this.iCustomer = i;
+            this.jCustomer = j;
+            this.savingValue = saving;
+        }
+
+        //Accesseurs
+        public Satellite getiSatellite() {
+            return iSatellite;
+        }
+
+        public Satellite getjSatellite() {
+            return jSatellite;
+        }
+
+        public Customer getiCustomer() {
+            return iCustomer;
+        }
+
+        public Customer getjCustomer() {
+            return jCustomer;
+        }
+
+        public double getSavingValue() {
+            return savingValue;
+        }
+
+        /**
+         * Représentation de l'objet en texte.
+         *
+         * @return texte
+         */
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("savings  =(");
+            sb.append("satellite sI : ").append(getiSatellite().toString());
+            sb.append(" customer i : ").append(getiCustomer().toString());
+            sb.append(" satellite sJ : ").append(getjSatellite().toString());
+            sb.append(" customer j : ").append(getjCustomer().toString());
+            sb.append(" Saving value : ").append(getSavingValue());
+            sb.append(")");
+            return sb.toString();
+        }
+
+        /**
+         * Surchage opérateur comparaison.
+         *
+         * @param o objet à comparer
+         * @return booléen indiquant si les objets sont identiques
+         */
+        @Override
+        public int compareTo(Object o) {
+            Saving saving = (Saving) o;
+            //comparaison
+            return Double.compare(this.getSavingValue(), saving.getSavingValue());
+        }
+    }
+
 }

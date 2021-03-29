@@ -5,23 +5,23 @@ import java.util.Optional;
 
 /**
  * Classe représentant l'affectation ou le séquencement (si aucun satellite
- * n'est défini) des satellites et des clients au sein d'une permutation. <br>
+ * n'est défini) des satellites et des clients au sein d'une permutation pour le second niveau. <br>
  * Une permutation est un ensemble d'instances de cette classe et donne la route
  * d'un véhicule.
  *
  * @author LASTENNET Dorian
  */
-public class Assignment {
+public class AssignmentSecond {
 
     private Customer customer; //client de l'affectation
-    private Optional<Satellite> satellite; //satellite de l'affectation
+    private Optional<Satellite> satellite; //satellite où le client est affecté
 
     /**
      * Constructeur pour le séquencement.
      *
      * @param customer le client
      */
-    public Assignment(Customer customer) {
+    public AssignmentSecond(Customer customer) {
         this.customer = customer;
         this.satellite = Optional.empty();
     }
@@ -32,7 +32,7 @@ public class Assignment {
      * @param customer le client
      * @param satellite le satellite ou le client est affecté
      */
-    public Assignment(Customer customer, Satellite satellite) {
+    public AssignmentSecond(Customer customer, Satellite satellite) {
         this.customer = customer;
         this.satellite = Optional.of(satellite);
     }
@@ -79,11 +79,11 @@ public class Assignment {
         }
 
         // l'objet comparé n'est pas de la même classe
-        if (!(o instanceof Assignment)) {
+        if (!(o instanceof AssignmentSecond)) {
             return false;
         }
 
-        Assignment a = (Assignment) o;
+        AssignmentSecond a = (AssignmentSecond) o;
 
         //affectation
         if (this.satellite.isPresent() && a.satellite.isPresent()) {

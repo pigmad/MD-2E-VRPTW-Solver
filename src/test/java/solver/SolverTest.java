@@ -31,6 +31,7 @@ class SolverTest {
         solver = new Solver(instance, true);
         TestSolution solTest = new TestSolution(solver);
         solver.solveInstance(solTest);
+        solver.setSolutionSatellitesDemand();
         solution = solver.getSolution();
     }
 
@@ -43,21 +44,21 @@ class SolverTest {
 
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 0.0",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 0.0",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 0.0"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 96",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 96",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 96"
     })
     void TestEvaluateFirstEchelon(String testFilename, double expectedValue) throws FileManagerException, IOException {
         setUpTestData(testFilename);
         double firstEchelonValue = solver.evaluateFirstEchelon(solution);
-        assertEquals(expectedValue, firstEchelonValue);
+        assertEquals(expectedValue, Math.round(firstEchelonValue));
     }
 
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 106",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 106",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 106"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 126",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 126",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 126"
     })
     void TestEvaluateSecondEchelon(String testFilename, double expectedValue) throws FileManagerException, IOException {
         setUpTestData(testFilename);
@@ -67,9 +68,9 @@ class SolverTest {
 
     @ParameterizedTest
     @CsvSource({
-        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 106",
-        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 106",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 106"
+        "'src/test/java/Instances/testInstanceValid-2,2,3.txt', 222",
+        "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', 222",
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', 222"
     })
     void TestEvaluateSolution(String testFilename, double expectedValue) throws FileManagerException, IOException {
         setUpTestData(testFilename);
@@ -81,7 +82,7 @@ class SolverTest {
     @CsvSource({
         "'src/test/java/Instances/testInstanceValid-2,2,3.txt', true",
         "'src/test/java/Instances/testInstanceTimeInvalid-2,2,3.txt', true",
-        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', true"
+        "'src/test/java/Instances/testInstanceCapacityInvalid-2,2,3.txt', false"
     })
     void TestIsFirstEchelonCapacitiesRespected(String testFilename, boolean expectedValue) throws FileManagerException, IOException {
         setUpTestData(testFilename);

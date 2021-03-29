@@ -2,7 +2,7 @@ package utils;
 
 import model.Instance;
 import model.Solution;
-import model.Assignment;
+import model.AssignmentSecond;
 
 import solver.Solver;
 
@@ -23,14 +23,14 @@ import org.junit.jupiter.params.provider.CsvSource;
 class FileManagerTest {
 
     public Solution stubSolution(Instance instance) {
-        List<List<Assignment>> permutations = new ArrayList<>();
-        List<Assignment> permutation = new ArrayList<>();
-        permutation.add(new Assignment(instance.getCustomers().get(0), instance.getSatellites().get(0)));
-        permutation.add(new Assignment(instance.getCustomers().get(0)));
-        permutation.add(new Assignment(instance.getCustomers().get(1), instance.getSatellites().get(1)));
-        permutation.add(new Assignment(instance.getCustomers().get(2), instance.getSatellites().get(1)));
-        permutation.add(new Assignment(instance.getCustomers().get(1)));
-        permutation.add(new Assignment(instance.getCustomers().get(2)));
+        List<List<AssignmentSecond>> permutations = new ArrayList<>();
+        List<AssignmentSecond> permutation = new ArrayList<>();
+        permutation.add(new AssignmentSecond(instance.getCustomers().get(0), instance.getSatellites().get(0)));
+        permutation.add(new AssignmentSecond(instance.getCustomers().get(0)));
+        permutation.add(new AssignmentSecond(instance.getCustomers().get(1), instance.getSatellites().get(1)));
+        permutation.add(new AssignmentSecond(instance.getCustomers().get(2), instance.getSatellites().get(1)));
+        permutation.add(new AssignmentSecond(instance.getCustomers().get(1)));
+        permutation.add(new AssignmentSecond(instance.getCustomers().get(2)));
         permutations.add(permutation);
         return new Solution(new ArrayList<>(), permutations);
     }

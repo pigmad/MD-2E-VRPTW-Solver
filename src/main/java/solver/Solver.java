@@ -1,6 +1,8 @@
 package solver;
 
-import model.Assignment;
+import java.util.ArrayList;
+import java.util.Collections;
+import model.AssignmentSecond;
 import model.Customer;
 import model.Satellite;
 import model.Instance;
@@ -8,6 +10,8 @@ import model.Solution;
 
 import java.util.List;
 import java.util.Optional;
+import model.AssignmentFirst;
+import model.Depot;
 
 /**
  * Classe solveur chargé de gérer la résolution de l'instance lue.
@@ -21,15 +25,15 @@ public class Solver {
     private boolean allowWaitingTime;
 
     public Solver(Instance instance, boolean allowWaitingTime) {
-        this.allowWaitingTime = allowWaitingTime;
         this.instance = instance;
         this.solution = new Solution();
+        this.allowWaitingTime = allowWaitingTime;
     }
 
     public Solver(Instance instance, Solution solution, boolean allowWaitingTime) {
-        this.allowWaitingTime = allowWaitingTime;
         this.instance = instance;
         this.solution = solution;
+        this.allowWaitingTime = allowWaitingTime;
     }
 
     public void solveInstance(Heuristic heuristic) {
@@ -54,10 +58,57 @@ public class Solver {
      * solution
      */
     public double evaluateFirstEchelon(Solution solution) {
-        double firstEchelonTravelCost = 0.0;
-        double firstEchelonHandlingCost = 0.0;
+        double firstEchelonTravelCostSum = 0.0;
+        double firstEchelonHandlingCostSum = 0.0;
 
-        return firstEchelonTravelCost + firstEchelonHandlingCost;
+        int firstEchelonVehicleCost = instance.getFirstEchelonFleet().getVehiclesCost();
+        double firstEchelonVehicleUsageCostSum = (double) solution.getFirstEchelonPermutations().size() * firstEchelonVehicleCost;
+
+        for (List<AssignmentFirst> route : solution.getFirstEchelonPermutations()) {
+            int routeSize = route.size();
+            for (int iAssignment = 0; iAssignment < routeSize; iAssignment++) {
+                //Assignation courante
+                Satellite currentSatellite = route.get(iAssignment).getSatellite();
+                Optional<Depot> currentDepot = route.get(iAssignment).getDepot();
+                //Permutation suivante
+                Satellite nextSatellite;
+                Optional<Depot> nextDepot;
+                //Si on atteint la fin de la route alors le véhicule doit retourner à son point d'origine
+                if (iAssignment == routeSize - 1) {
+                    nextSatellite = route.get(0).getSatellite();
+                    nextDepot = route.get(0).getDepot();
+                } else {
+                    nextSatellite = route.get(iAssignment + 1).getSatellite();
+                    nextDepot = route.get(iAssignment + 1).getDepot();
+                }
+                /**
+                 * Si aucun depot dans la route alors on viens d'un
+                 * satellite on calcule le cout de trajet du satellite dans la
+                 * route i au depot dans la route i ou au satellite
+                 * i+1 et le cout de déchargement du véhicule
+                 *
+                 */
+                if (currentDepot.isEmpty()) {
+                    firstEchelonTravelCostSum += nextDepot.isEmpty() ? instance.getDistance(currentSatellite, nextSatellite) : instance.getDistance(currentSatellite, nextDepot.get());
+                    firstEchelonHandlingCostSum += currentSatellite.getServiceTime();
+                } /**
+                 * Si il y a un depot dans la route il représente
+                 * l'affectation d'un satellite au depot on calcule le cout de
+                 * trajet du satellite dans la route i au depot dans la
+                 * route i ou au satellite i+1 et le cout de chargement du
+                 * véhicule
+                 *
+                 */
+                else {
+                    firstEchelonTravelCostSum += nextDepot.isEmpty() ? instance.getDistance(currentDepot.get(), nextSatellite) : instance.getDistance(currentDepot.get(), nextDepot.get());
+                    if(nextDepot.isEmpty()){firstEchelonHandlingCostSum += currentDepot.get().getServiceTime();}
+                    if(nextDepot.isPresent()){
+                        if(!currentDepot.get().equals(nextDepot.get())){firstEchelonHandlingCostSum += currentDepot.get().getServiceTime();}
+                    }
+                }
+            }
+        }
+        return firstEchelonTravelCostSum + firstEchelonHandlingCostSum + firstEchelonVehicleUsageCostSum;
     }
 
     /**
@@ -73,7 +124,7 @@ public class Solver {
         int secondEchelonVehicleCost = instance.getSecondEchelonFleet().getVehiclesCost();
         double secondEchelonVehicleUsageCostSum = (double) solution.getSecondEchelonPermutations().size() * secondEchelonVehicleCost;
 
-        for (List<Assignment> route : solution.getSecondEchelonPermutations()) {
+        for (List<AssignmentSecond> route : solution.getSecondEchelonPermutations()) {
             int routeSize = route.size();
             for (int iAssignment = 0; iAssignment < routeSize; iAssignment++) {
                 //Assignation courante
@@ -99,7 +150,7 @@ public class Solver {
                  */
                 if (currentSatellite.isEmpty()) {
                     secondEchelonTravelCostSum += nextSatellite.isEmpty() ? instance.getDistance(currentCustomer, nextCustomer) : instance.getDistance(currentCustomer, nextSatellite.get());
-                    if(nextSatellite.isEmpty()){secondEchelonHandlingCostSum += currentCustomer.getServiceTime();}
+                    secondEchelonHandlingCostSum += currentCustomer.getServiceTime();
                 } /**
                  * Si il y a un satellite dans la route il représente
                  * l'affectation d'un client au satellite on calcule le cout de
@@ -111,6 +162,9 @@ public class Solver {
                 else {
                     secondEchelonTravelCostSum += nextSatellite.isEmpty() ? instance.getDistance(currentSatellite.get(), nextCustomer) : instance.getDistance(currentSatellite.get(), nextSatellite.get());
                     if(nextSatellite.isEmpty()){secondEchelonHandlingCostSum += currentSatellite.get().getServiceTime();}
+                    if(nextSatellite.isPresent()){
+                        if(!currentSatellite.get().equals(nextSatellite.get())){secondEchelonHandlingCostSum += currentSatellite.get().getServiceTime();}
+                    }
                 }
             }
         }
@@ -139,8 +193,41 @@ public class Solver {
      */
     public boolean isFirstEchelonCapacitiesRespected(Solution solution) {
         boolean isDoable = true;
+        int iPermutation = 0;
+        while (isDoable && iPermutation < solution.getFirstEchelonPermutations().size()) {
+            isDoable = isFirstEchelonPermutationCapacitiesRespected(solution.getFirstEchelonPermutations().get(iPermutation));
+            iPermutation++;
+        }
         return isDoable;
     }
+
+    /**
+     * Fonction d'évaluation de la faisabilité des capacités d'une route.
+     *
+     * @param route la route à évaluer
+     * @return booléen indiquant si la route est faisable
+     */
+    public boolean isFirstEchelonPermutationCapacitiesRespected(List<AssignmentFirst> route) {
+        boolean isDoable = true;
+        int routeSize = route.size();
+        int fleetLoad = 0;
+        int iAssignment = 0;
+        while (isDoable && iAssignment < routeSize) {
+            //Permutation courante
+            Satellite satellite = route.get(iAssignment).getSatellite();
+            Optional<Depot> currentDepot = route.get(iAssignment).getDepot();
+            //Il s'agit de l'affectation d'un client donc on charge le camion
+            if (currentDepot.isPresent()) {
+                fleetLoad += solution.getSecondEchelonCapacity().get(satellite.getSiteID()-1);
+            } else {
+                fleetLoad -= solution.getSecondEchelonCapacity().get(satellite.getSiteID()-1);
+            }
+            isDoable = fleetLoad <= instance.getFirstEchelonFleet().getVehiclesCapacity();
+            iAssignment++;
+        }
+        return isDoable;
+    }
+    
 
     /**
      * Fonction d'évaluation du respect de la contrainte de nombre de véhicules pour le premier niveau.
@@ -191,7 +278,7 @@ public class Solver {
      * @param route la route à évaluer
      * @return booléen indiquant si la route est faisable
      */
-    public boolean isSecondEchelonPermutationCapacitiesRespected(List<Assignment> route) {
+    public boolean isSecondEchelonPermutationCapacitiesRespected(List<AssignmentSecond> route) {
         boolean isDoable = true;
         int routeSize = route.size();
         int fleetLoad = 0;
@@ -236,7 +323,7 @@ public class Solver {
      * @param route la route à évaluer
      * @return booléen indiquant si la route est faisable
      */
-    public boolean isSecondEchelonPermutationTimeWindowsRespected(List<Assignment> route) {
+    public boolean isSecondEchelonPermutationTimeWindowsRespected(List<AssignmentSecond> route) {
         boolean isDoable = true;
         int routeSize = route.size();
         double currentTime = 0.0;
@@ -299,6 +386,22 @@ public class Solver {
      */
     public boolean isSecondEchelonVehiclesNumberRespected(Solution solution) {
         return solution.getSecondEchelonPermutations().size() <= instance.getSecondEchelonFleet().getVehiclesNumber();
+    }
+    
+    /**
+     * Calcule la somme des demandes clients par satellite une fois que la solution est touvée
+     */
+    public void setSolutionSatellitesDemand(){
+        List<Integer> list = new ArrayList<>(Collections.nCopies(instance.getSatellites().size(), 0));
+        List<List<AssignmentSecond>> secondEchelonPermutation = solution.getSecondEchelonPermutations();
+        for (List<AssignmentSecond> route : secondEchelonPermutation){
+            for(AssignmentSecond assign : route){
+                if(assign.getSatellite().isPresent()){
+                    list.set(assign.getSatellite().get().getSiteID()-1, list.get(assign.getSatellite().get().getSiteID()-1)+assign.getCustomer().getDemandSize());
+                }
+            }
+        }
+        solution.setSecondEchelonCapacity(list);
     }
 
     //Accesseurs
