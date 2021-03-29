@@ -169,9 +169,9 @@ public class ClarkeWrightFirst implements Heuristic {
                 while (sInRoute) {
                     AssignmentFirst assign = route.get(index);
                     if (assign.getSatellite().equals(s)) {
-                        Optional<Depot> assignSat = assign.getDepot();
-                        if (assignSat.isPresent()) {
-                            if (assignSat.get().equals(s)) {
+                        Optional<Depot> assignDep = assign.getDepot();
+                        if (assignDep.isPresent()) {
+                            if (assignDep.get().equals(d)) {
                                 return route;
                             } else {
                                 sInRoute = false;

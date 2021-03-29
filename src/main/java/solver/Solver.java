@@ -367,7 +367,7 @@ public class Solver {
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
                 } //trajet satellite->satellite
                 else {
-                    currentTime += instance.getDistance(currentSatellite.get(), nextSatellite.get());
+                    currentTime += currentSatellite.get().equals(nextSatellite.get()) ? instance.getDistance(currentSatellite.get(), nextSatellite.get()) + currentSatellite.get().getServiceTime() : instance.getDistance(currentSatellite.get(), nextSatellite.get());
                 }
             }
             isDoable = isTimeWindowRespected;
@@ -396,8 +396,9 @@ public class Solver {
         List<List<AssignmentSecond>> secondEchelonPermutation = solution.getSecondEchelonPermutations();
         for (List<AssignmentSecond> route : secondEchelonPermutation){
             for(AssignmentSecond assign : route){
-                if(assign.getSatellite().isPresent()){
-                    list.set(assign.getSatellite().get().getSiteID()-1, list.get(assign.getSatellite().get().getSiteID()-1)+assign.getCustomer().getDemandSize());
+                Optional<Satellite> assignSat = assign.getSatellite();
+                if(assignSat.isPresent()){
+                    list.set(assignSat.get().getSiteID()-1, list.get(assignSat.get().getSiteID()-1)+assign.getCustomer().getDemandSize());
                 }
             }
         }
