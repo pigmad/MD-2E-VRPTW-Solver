@@ -39,3 +39,14 @@ satellites ou dépôts avant d’effectuer sa livraison. On mutualise ainsi les 
 - On autorise la livraison de la commande d’un client vers le satellite à être répartie dans
 plusieurs véhicules, donc uniquement pour le premier niveau. La livraison du satellite au
 client doit être faite en utilisant un unique véhicule.
+
+# Méthodes de résolution
+
+## Génération d'une solution initiale 
+
+Basée sur l'heuristique de Clarke & Wright. Modifiée pour ajouter la possibilité de fusion au milieu d'une tournée.
+On résout d'abord le second niveau en introduisant une nouvelle possibilité de fusion dans le cas où les clients i et j sont affectées à des satellites différents. Dans le cas où i et j sont affectés au même satellite on conserve la fusion classique.
+
+![FusionsGithub](https://user-images.githubusercontent.com/34888994/112842765-2ed8e480-90a2-11eb-8786-55f661ea2d60.png)
+
+La solution obtenue est repércutée sur l'ordre supérieur donnant la demande de chaque satellite. On résout le premier niveau en utilisant la même méthode.
