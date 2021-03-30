@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+
 /**
  * Implémentation de l'algorithme de CW adapté au problème. <br>
  * On considère deux types de fusion pour des satellites i et j: <br>

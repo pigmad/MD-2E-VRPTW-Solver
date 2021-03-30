@@ -42,7 +42,7 @@ public class TestSolution implements Heuristic  {
         permutationSecond.add(new AssignmentSecond(customers.get(2)));
         permutationsSecond.add(permutationSecond);
         
-        //création de la permutation pour le second niveau
+        //création de la permutation pour le premier niveau
         List<List<AssignmentFirst>> permutationsFirst = new ArrayList<>();
         List<AssignmentFirst> permutationFirst = new ArrayList<>();
         permutationFirst.add(new AssignmentFirst(satellites.get(0),depots.get(0)));

@@ -21,7 +21,6 @@ class InstanceTest {
         ArrayList<Customer> customers = new ArrayList<>(3);
         customers.add(new Customer(1, 0, 5, 10, 10, 15, 25, 10));
         customers.add(new Customer(2, 1, 10, 10, 10, 0, 25, 10));
-        customers.add(new Customer(3, 2, 15, -10, 10, 0, 25, 10));
 
         ArrayList<Satellite> satellites = new ArrayList<>(2);
         satellites.add(new Satellite(1, 3, 8, 20, 10));
