@@ -63,20 +63,22 @@ public class Main {
                     long startTime = System.nanoTime();
                     //résolution du second échelon
                     solver.solveInstance(secondCK);
-                    //on affecte les demandes aux satellites
-                    solver.setSolutionSatellitesDemand();
+                    //résolution du second échelon
                     solver.solveInstance(firstCK);
                     Solution solution = solver.getSolution();
-                    System.out.println(solution);
                     //fin timer
                     long elapsedTime = (System.nanoTime() - startTime) / 1000000;
                     
+                    System.out.println(solution);
                     System.out.println("Temps écoulé : " + elapsedTime + "ms");
                     System.out.println("Fonction Obj : " + solver.evaluateSolution(solution));
-                    System.out.println("Contraintes temporelles respectées : " + (solver.isSecondEchelonTimeWindowsRespected(solution) ? "oui" : "non"));
-                    System.out.println("Contraintes capacités respectées : " + (solver.isSecondEchelonCapacitiesRespected(solution) ? "oui" : "non"));
-                    System.out.println("Contraintes véhicules respectées : " + (solver.isSecondEchelonVehiclesNumberRespected(solution) ? "oui" : "non"));
+                    System.out.println("Contraintes capacités 1er niveau respectées : " + (solver.isFirstEchelonCapacitiesRespected(solution) ? "oui" : "non"));
+                    System.out.println("Contraintes véhicules 1er niveau respectées : " + (solver.isFirstEchelonVehiclesNumberRespected(solution) ? "oui" : "non"));
+                    System.out.println("Contraintes temporelles 2nd niveau respectées : " + (solver.isSecondEchelonTimeWindowsRespected(solution) ? "oui" : "non"));
+                    System.out.println("Contraintes capacités 2nd niveau respectées : " + (solver.isSecondEchelonCapacitiesRespected(solution) ? "oui" : "non"));
+                    System.out.println("Contraintes véhicules 2nd respectées : " + (solver.isSecondEchelonVehiclesNumberRespected(solution) ? "oui" : "non"));
                     System.out.println("Contraintes clients livrées : " + (solver.areAllCustomersDelivered(solution) ? "oui" : "non"));
+                    System.out.println("Solution faisable : " + (solver.isSolutionDoable(solution) ? "oui" : "non"));
                     
                     //solution détaillée pour le fichier
                     fm.writeSolution(solver, instanceFile + "-result.txt");

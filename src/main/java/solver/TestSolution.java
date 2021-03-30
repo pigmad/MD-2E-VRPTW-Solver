@@ -51,6 +51,10 @@ public class TestSolution implements Heuristic  {
         permutationFirst.add(new AssignmentFirst(satellites.get(1)));
         permutationsFirst.add(permutationFirst);
         
-        return new Solution(permutationsFirst,permutationsSecond);
+        //création de la solution et calcul de la charge des satellites
+        Solution solution = new Solution(permutationsFirst,permutationsSecond);
+        solution.setSolutionSatellitesDemand(solver.getInstance());
+        
+        return solution;
     }
 }

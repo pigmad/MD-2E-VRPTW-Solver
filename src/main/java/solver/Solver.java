@@ -1,7 +1,5 @@
 package solver;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import model.AssignmentSecond;
 import model.Customer;
 import model.Satellite;
@@ -36,6 +34,10 @@ public class Solver {
         this.allowWaitingTime = allowWaitingTime;
     }
 
+    /**
+     * Résout l'instance à l'aide de la méthode de résolution de l'heuristique en paramètre
+     * @param heuristic l'heuristique à utiliser pour résoudre l'instance
+     */
     public void solveInstance(Heuristic heuristic) {
         solution = heuristic.solve();
     }
@@ -216,7 +218,7 @@ public class Solver {
             //Permutation courante
             Satellite satellite = route.get(iAssignment).getSatellite();
             Optional<Depot> currentDepot = route.get(iAssignment).getDepot();
-            //Il s'agit de l'affectation d'un client donc on charge le camion
+            //Il s'agit de l'affectation d'un satellite donc on charge le camion
             if (currentDepot.isPresent()) {
                 fleetLoad += solution.getSecondEchelonCapacity().get(satellite.getSiteID()-1);
             } else {
@@ -344,7 +346,7 @@ public class Solver {
                     //arrivée au plus tôt du camion au client
                     double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentCustomer, nextCustomer));
                     //on ajoute une pénalité si le véhicule est en avance
-                    earlyPenalty += startServiceTime == nextCustomer.getTimeWindowStart() ? earlyPenalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
+                    earlyPenalty += (startServiceTime == nextCustomer.getTimeWindowStart()) ? nextCustomer.getTimeWindowStart() - currentTime : 0.0;
                     isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
                 } //trajet client->satellite
@@ -360,20 +362,23 @@ public class Solver {
                     currentTime += currentSatellite.get().getServiceTime();
                     //arrivée au plus tôt du camion au client
                     double startServiceTime = Math.max(nextCustomer.getTimeWindowStart(), currentTime + instance.getDistance(currentSatellite.get(), nextCustomer));
-                    //on ajoute une pénalité si le véhicule est en avance
-                    earlyPenalty += startServiceTime == nextCustomer.getTimeWindowStart() ? earlyPenalty += nextCustomer.getTimeWindowStart() - currentTime : 0.0;
+                    //on ajoute une pénalité si le véhicule est en avance et qu'on ne se trouve pas en début de tournée
+                    earlyPenalty += (startServiceTime == nextCustomer.getTimeWindowStart()) ? nextCustomer.getTimeWindowStart() - currentTime : 0.0;
                     //on vérifie la contrainte
                     isTimeWindowRespected = startServiceTime <= nextCustomer.getTimeWindowEnd();
+                    //date départ au plus tot
                     currentTime = startServiceTime + nextCustomer.getServiceTime();
                 } //trajet satellite->satellite
                 else {
-                    currentTime += currentSatellite.get().equals(nextSatellite.get()) ? instance.getDistance(currentSatellite.get(), nextSatellite.get()) + currentSatellite.get().getServiceTime() : instance.getDistance(currentSatellite.get(), nextSatellite.get());
+                    //on ajoute la distance satellite depot et le cout de chargement
+                    currentTime += currentSatellite.get().equals(nextSatellite.get()) ? instance.getDistance(currentSatellite.get(), nextSatellite.get()) : instance.getDistance(currentSatellite.get(), nextSatellite.get()) + currentSatellite.get().getServiceTime();
                 }
             }
+            //vérification sans temps d'attente entre clients
+            if(!allowWaitingTime){isTimeWindowRespected = isTimeWindowRespected && earlyPenalty==0.0;}
             isDoable = isTimeWindowRespected;
             iAssignment++;
         }
-        if(!allowWaitingTime){isDoable = earlyPenalty==0.0;}
         return isDoable;
     }
 
@@ -386,24 +391,7 @@ public class Solver {
      */
     public boolean isSecondEchelonVehiclesNumberRespected(Solution solution) {
         return solution.getSecondEchelonPermutations().size() <= instance.getSecondEchelonFleet().getVehiclesNumber();
-    }
-    
-    /**
-     * Calcule la somme des demandes clients par satellite une fois que la solution est touvée
-     */
-    public void setSolutionSatellitesDemand(){
-        List<Integer> list = new ArrayList<>(Collections.nCopies(instance.getSatellites().size(), 0));
-        List<List<AssignmentSecond>> secondEchelonPermutation = solution.getSecondEchelonPermutations();
-        for (List<AssignmentSecond> route : secondEchelonPermutation){
-            for(AssignmentSecond assign : route){
-                Optional<Satellite> assignSat = assign.getSatellite();
-                if(assignSat.isPresent()){
-                    list.set(assignSat.get().getSiteID()-1, list.get(assignSat.get().getSiteID()-1)+assign.getCustomer().getDemandSize());
-                }
-            }
-        }
-        solution.setSecondEchelonCapacity(list);
-    }
+    }    
 
     //Accesseurs
     public Instance getInstance() {

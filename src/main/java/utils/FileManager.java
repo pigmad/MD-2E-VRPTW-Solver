@@ -38,7 +38,7 @@ public class FileManager {
 
     /**
      * Fonction de lecture des fichiers d'instances.<br>
- Cette fonction instantie tous les objets nécessaires nécessaires à la résolution du problème.<br> 
+     * Cette fonction instantie tous les objets nécessaires nécessaires à la résolution du problème.<br> 
      * Les fichiers doivent contenir dans leur nom 3 entiers séparés par des ','
      * donnant le nombre de dépots, de satellites et de clients <br>
      * Et être dans le format suivant : <br>
@@ -182,10 +182,13 @@ public class FileManager {
             Solution solution = solver.getSolution();
             writer.println("Solution : " + solution.toString());
             writer.println("Fonction Obj : " + solver.evaluateSolution(solution));
-            writer.println("Contraintes temporelles respectées : " + (solver.isSecondEchelonTimeWindowsRespected(solution) ? "oui" : "non"));
-            writer.println("Contraintes capacités respectées : " + (solver.isSecondEchelonCapacitiesRespected(solution) ? "oui" : "non"));
-            writer.println("Contraintes véhicules respectées : " + (solver.isSecondEchelonVehiclesNumberRespected(solution) ? "oui" : "non"));
+            writer.println("Contraintes capacités 1er niveau respectées : " + (solver.isFirstEchelonCapacitiesRespected(solution) ? "oui" : "non"));
+            writer.println("Contraintes véhicules 1er niveau respectées : " + (solver.isFirstEchelonVehiclesNumberRespected(solution) ? "oui" : "non"));
+            writer.println("Contraintes temporelles 2nd niveau respectées : " + (solver.isSecondEchelonTimeWindowsRespected(solution) ? "oui" : "non"));
+            writer.println("Contraintes capacités 2nd niveau respectées : " + (solver.isSecondEchelonCapacitiesRespected(solution) ? "oui" : "non"));
+            writer.println("Contraintes véhicules 2nd respectées : " + (solver.isSecondEchelonVehiclesNumberRespected(solution) ? "oui" : "non"));
             writer.println("Contraintes clients livrées : " + (solver.areAllCustomersDelivered(solution) ? "oui" : "non"));
+            writer.println("Solution faisable : " + (solver.isSolutionDoable(solution) ? "oui" : "non"));
         } catch (IOException e) {
             throw new FileManagerException("Erreur d'écriture.", e);
         }
@@ -206,7 +209,7 @@ public class FileManager {
         //A la création du fichier on ajoute l'entête
         if (!new File(filepath).isFile()) {
             try ( PrintWriter writer = new PrintWriter(new File(filepath))) {
-                writer.append("Nom instance;FO;Contr temps;Contr capa;Contr véhicules;Contr livraisons;Temps résolution");
+                writer.append("Nom instance;FO;Contr Capa 1E; Contr Véhicules 1E;Contr temps 2E;Contr capa 2E;Contr véhicules 2E;Contr livraisons; Réalisable;Temps résolution");
                 writer.println();
             } catch (IOException e) {
                 throw new FileManagerException("Erreur d'écriture.", e);
@@ -217,10 +220,13 @@ public class FileManager {
             Solution solution = solver.getSolution();
             writer.print(instanceName + ";");
             writer.print(solver.evaluateSolution(solution) + ";");
+            writer.print((solver.isFirstEchelonCapacitiesRespected(solution) ? "oui;" : "non;"));
+            writer.print((solver.isFirstEchelonVehiclesNumberRespected(solution) ? "oui;" : "non;"));
             writer.print((solver.isSecondEchelonTimeWindowsRespected(solution) ? "oui;" : "non;"));
             writer.print((solver.isSecondEchelonCapacitiesRespected(solution) ? "oui;" : "non;"));
             writer.print((solver.isSecondEchelonVehiclesNumberRespected(solution) ? "oui;" : "non;"));
             writer.print((solver.areAllCustomersDelivered(solution) ? "oui;" : "non;"));
+            writer.print((solver.isSolutionDoable(solution) ? "oui;" : "non;"));
             writer.print(solveTime);
             writer.println();
         } catch (IOException e) {

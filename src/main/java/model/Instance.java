@@ -2,7 +2,6 @@ package model;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,10 +61,6 @@ public class Instance {
 
     public Fleet getSecondEchelonFleet() {
         return secondEchelonFleet;
-    }
-
-    public List<List<Double>> getDistanceMatrix() {
-        return Collections.unmodifiableList(distanceMatrix);
     }
 
     public double getDistance(Site startSite, Site arrivalSite) {

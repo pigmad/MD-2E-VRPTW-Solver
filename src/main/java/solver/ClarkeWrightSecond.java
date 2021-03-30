@@ -45,8 +45,12 @@ public class ClarkeWrightSecond implements Heuristic {
 
         //Réparation de la solution si elle utilise plus de camions que disponible
         repairSolutionExceedingVehiclesNumber(routes, solver);
+        
+        //création de la solution et calcul de la charge des satellites
+        Solution solution = new Solution(new ArrayList<>(0), routes);
+        solution.setSolutionSatellitesDemand(solver.getInstance());
 
-        return new Solution(new ArrayList<>(), routes);
+        return solution;
     }
 
     /**

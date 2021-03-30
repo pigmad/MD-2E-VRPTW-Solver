@@ -31,7 +31,6 @@ class SolverTest {
         solver = new Solver(instance, true);
         TestSolution solTest = new TestSolution(solver);
         solver.solveInstance(solTest);
-        solver.setSolutionSatellitesDemand();
         solution = solver.getSolution();
     }
 
