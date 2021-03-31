@@ -23,12 +23,12 @@ class InstanceTest {
         customers.add(new Customer(2, 1, 10, 10, 10, 0, 25, 10));
 
         ArrayList<Satellite> satellites = new ArrayList<>(2);
-        satellites.add(new Satellite(1, 3, 8, 20, 10));
-        satellites.add(new Satellite(2, 4, 13, 20, 10));
+        satellites.add(new Satellite(1, 2, 8, 20, 10));
+        satellites.add(new Satellite(2, 3, 13, 20, 10));
 
         ArrayList<Depot> depots = new ArrayList<>(2);
-        depots.add(new Depot(1, 5, 8, 30, 10));
-        depots.add(new Depot(2, 6, 13, 30, 10));
+        depots.add(new Depot(1, 4, 8, 30, 10));
+        depots.add(new Depot(2, 5, 13, 30, 10));
 
         instance = new Instance(depots, satellites, customers, null, null);
     }
