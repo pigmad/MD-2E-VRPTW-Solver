@@ -51,7 +51,7 @@ On résout d'abord le second niveau en introduisant une nouvelle possibilité de
 
 La solution obtenue est repércutée sur l'ordre supérieur donnant la demande de chaque satellite. On résout le premier niveau en utilisant la même méthode.
 
-#Guide d'installation
+# Guide d'installation
 
 ## Installation sur machine pour utilisation
 
