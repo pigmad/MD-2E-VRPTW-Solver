@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Implémentation de l'algorithme de CW adapté au problème. <br>
+ * Implémentation de l'algorithme de CW adapté au problème pour la résolution du premier niveau. <br>
  * On considère deux types de fusion pour des satellites i et j: <br>
  * soit les depots de routes à fusionner sont identiques alors on conserve la fusion classique : depI, i, j, depI <br>
  * soit ils sont différents et on obtient : depI,i,depJ,j,depI 
