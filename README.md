@@ -50,3 +50,48 @@ On résout d'abord le second niveau en introduisant une nouvelle possibilité de
 ![FusionsGithub](https://user-images.githubusercontent.com/34888994/112842765-2ed8e480-90a2-11eb-8786-55f661ea2d60.png)
 
 La solution obtenue est repércutée sur l'ordre supérieur donnant la demande de chaque satellite. On résout le premier niveau en utilisant la même méthode.
+
+#Guide d'installation
+
+## Installation sur machine pour utilisation
+
+Deux options sont possible pour installer et utiliser le projet.
+La première option consiste à télécharger le projet pré-compilé en jar exécutable et disponible
+sur l’espace github du projet Release du projet.
+Ce jar contient toutes les sources du projet et peut être exécuté sur tous les environnements via
+la commande : java -jar Solver-x.x.jar
+La seconde option est de télécharger les sources complètes du projet sur l’espace github du projet
+Espace Github du projet et de compiler les fichiers sources du projet en utilisant la commande
+maven : mvn clean install. Cette commande compile le projet, lance les tests et crée un exécutable
+jar dans le dossier target.
+De la même manière on peut exécuter le projet via la commande : java -jar Solver-x.x.jar.
+
+## Installation sur machine pour développement
+
+Dans le cas d’une reprise du projet pour développement, le projet git peut être fork vers un autre
+compte utilisateur. Une fois le projet fork vers le nouveau compte, le projet peut être importé
+via la commande : git clone et ajouté comme projet dans un IDE.
+
+# Guide d'utilisation
+
+Comme précisé dans le Document d’installation, le projet se lance via la commande : java -jar
+Solver-x.x.jar.
+
+A l’exécution un explorateur de fichier s’ouvre pour permettre à l’utilisateur de choisir les fichiers
+d’instances à traiter.
+
+![Util1](https://user-images.githubusercontent.com/34888994/113135192-1f80a500-9222-11eb-83e9-be3c7dddc82a.png)
+
+L’utilisateur a la possibilité de choisir un seul ou plusieurs fichiers à traiter.
+
+![Util2](https://user-images.githubusercontent.com/34888994/113135289-3e7f3700-9222-11eb-9296-b092ef8f8265.png)
+
+Pour chaque fichier sélectionné, l’instance est lue et résolue. La console affiche des informations pendant l’exécution (instances lue, solution trouvée, temps de résolution...).
+
+![Util3](https://user-images.githubusercontent.com/34888994/113135310-450dae80-9222-11eb-828a-44bb564d0240.png)
+
+A la fin de l’exécution dans le répertoire contenant les fichiers d’instances sélectionnées, pour chacun des fichiers se trouvera un fichier de solution contenant la solution, la valeur de la fonction objectif et la faisabilité de la solution. 
+On retrouve également un fichier récapitulant l’exécution et donnant l’ensemble des solutions, pour chaque instance résolue note le nom de l’instance, le
+temps de résolution, la fonction objectif trouvée, la faisabilité de la solution.
+
+![Util4](https://user-images.githubusercontent.com/34888994/113135330-4b9c2600-9222-11eb-9969-e97a5f356d2b.png)
